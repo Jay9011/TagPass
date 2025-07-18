@@ -1,0 +1,59 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Primary Colors -->
+    <SolidColorBrush x:Key="PrimaryColor" Color="#3282B8"/>
+    <SolidColorBrush x:Key="PrimaryDarkColor" Color="#2272A8"/>
+    <SolidColorBrush x:Key="PrimaryLightColor" Color="#52A2D8"/>
+
+    <!-- Secondary Colors -->
+    <SolidColorBrush x:Key="SecondaryColor" Color="#94a3b8"/>
+    <SolidColorBrush x:Key="SecondaryDarkColor" Color="#64748b"/>
+    <SolidColorBrush x:Key="SecondaryLightColor" Color="#cbd5e1"/>
+
+    <!-- Accent Colors -->
+    <SolidColorBrush x:Key="AccentColor" Color="#F39422"/>
+    <SolidColorBrush x:Key="AccentDarkColor" Color="#D37202"/>
+    <SolidColorBrush x:Key="AccentLightColor" Color="#F4A452"/>
+
+    <!-- Background Colors -->
+    <SolidColorBrush x:Key="BackgroundColor" Color="#0B161C"/>
+    <SolidColorBrush x:Key="SurfaceColor" Color="#1B262C"/>
+    <SolidColorBrush x:Key="CardBackgroundColor" Color="#2B364C"/>
+
+    <!-- Dark Background Colors -->
+    <SolidColorBrush x:Key="DarkBackgroundColor" Color="#061117"/>
+    <SolidColorBrush x:Key="DarkSurfaceColor" Color="#0B161C"/>
+    <SolidColorBrush x:Key="DarkCardBackgroundColor" Color="#1B262C"/>
+
+    <!-- Text Colors -->
+    <SolidColorBrush x:Key="TextPrimaryColor" Color="#f1f5f9"/>
+    <SolidColorBrush x:Key="TextSecondaryColor" Color="#94a3b8"/>
+    <SolidColorBrush x:Key="TextDisabledColor" Color="#64748b"/>
+    <SolidColorBrush x:Key="TextOnPrimaryColor" Color="#0f172a"/>
+
+    <!-- Border Colors -->
+    <SolidColorBrush x:Key="BorderColor" Color="#475569"/>
+    <SolidColorBrush x:Key="BorderFocusColor" Color="#60a5fa"/>
+    <SolidColorBrush x:Key="BorderHoverColor" Color="#64748b"/>
+
+    <!-- State Colors -->
+    <SolidColorBrush x:Key="SuccessColor" Color="#22c55e"/>
+    <SolidColorBrush x:Key="WarningColor" Color="#f59e0b"/>
+    <SolidColorBrush x:Key="ErrorColor" Color="#f87171"/>
+    <SolidColorBrush x:Key="InfoColor" Color="#60a5fa"/>
+
+    <!-- Button Colors -->
+    <SolidColorBrush x:Key="ButtonPrimaryBackground" Color="#3b82f6"/>
+    <SolidColorBrush x:Key="ButtonPrimaryHover" Color="#2563eb"/>
+    <SolidColorBrush x:Key="ButtonPrimaryPressed" Color="#1d4ed8"/>
+
+    <SolidColorBrush x:Key="ButtonSecondaryBackground" Color="#475569"/>
+    <SolidColorBrush x:Key="ButtonSecondaryHover" Color="#64748b"/>
+    <SolidColorBrush x:Key="ButtonSecondaryPressed" Color="#334155"/>
+
+    <!-- Shadow Colors -->
+    <SolidColorBrush x:Key="ShadowColor" Color="#000000" Opacity="0.3"/>
+    <SolidColorBrush x:Key="ShadowDarkColor" Color="#000000" Opacity="0.5"/>
+
+</ResourceDictionary> 
