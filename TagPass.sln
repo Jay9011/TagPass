@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36203.30 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TagPass", "TagPass\TagPass.csproj", "{432A582A-F4C0-4D82-B579-D473B5960487}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{432A582A-F4C0-4D82-B579-D473B5960487}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{432A582A-F4C0-4D82-B579-D473B5960487}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{432A582A-F4C0-4D82-B579-D473B5960487}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{432A582A-F4C0-4D82-B579-D473B5960487}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F0B4E3CE-75D5-41AA-A724-4E8F0305E010}
+	EndGlobalSection
+EndGlobal
