@@ -1,12 +1,66 @@
 <UserControl x:Class="TagPass.Views.SettingsView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" 
              d:DesignHeight="600" d:DesignWidth="500">
     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="20">
         <StackPanel>
+            <!-- 브로커 설정 -->
+            <Border Style="{StaticResource CardStyle}">
+                <StackPanel>
+                    <TextBlock Text="브로커 설정" Style="{StaticResource H3TextStyle}"/>
+
+                    <Grid Margin="0,10,0,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        
+                        <!-- IP 설정 -->
+                        <TextBlock Grid.Row="0" Grid.Column="0" 
+                                   Text="IP:" 
+                                   Style="{StaticResource LabelTextStyle}" 
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,15,8"/>
+                        <TextBox Grid.Row="0" Grid.Column="1"
+                                 Name="txtBrokerIP" 
+                                 Text="127.0.0.1"
+                                 Style="{StaticResource ModernTextBoxSStyle}"
+                                 Margin="0,0,0,8"/>
+                        
+                        <!-- Port 설정 -->
+                        <TextBlock Grid.Row="1" Grid.Column="0" 
+                                   Text="Port:" 
+                                   Style="{StaticResource LabelTextStyle}" 
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,15,8"/>
+                        <TextBox Grid.Row="1" Grid.Column="1"
+                                 Name="txtBrokerPort" 
+                                 Text="1883"
+                                 Style="{StaticResource ModernTextBoxSStyle}"
+                                 Margin="0,0,0,8"/>
+                        
+                        <!-- Topic 설정 -->
+                        <TextBlock Grid.Row="2" Grid.Column="0" 
+                                   Text="토픽:" 
+                                   Style="{StaticResource LabelTextStyle}" 
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,15,0"/>
+                        <TextBox Grid.Row="2" Grid.Column="1"
+                                 Name="txtBrokerTopic" 
+                                 Text="TagPass/data"
+                                 Style="{StaticResource ModernTextBoxSStyle}"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
             <!-- 화면 설정 -->
             <Border Style="{StaticResource CardStyle}">
                 <StackPanel>
@@ -52,19 +106,19 @@
                             <RowDefinition/>
                             <RowDefinition/>
                         </Grid.RowDefinitions>
-                        
+
                         <TextBlock Grid.Row="0" Grid.Column="0" Text="설정 열기:" Style="{StaticResource LabelTextStyle}"/>
                         <TextBlock Grid.Row="0" Grid.Column="1" Text="F12" Style="{StaticResource BodyTextStyle}"/>
-                        
+
                         <TextBlock Grid.Row="1" Grid.Column="0" Text="전체화면 토글:" Style="{StaticResource LabelTextStyle}"/>
                         <TextBlock Grid.Row="1" Grid.Column="1" Text="F11" Style="{StaticResource BodyTextStyle}"/>
-                        
+
                         <TextBlock Grid.Row="2" Grid.Column="0" Text="설정 닫기:" Style="{StaticResource LabelTextStyle}"/>
                         <TextBlock Grid.Row="2" Grid.Column="1" Text="ESC" Style="{StaticResource BodyTextStyle}"/>
                     </Grid>
                 </StackPanel>
             </Border>
-            
+
         </StackPanel>
     </ScrollViewer>
 </UserControl> 

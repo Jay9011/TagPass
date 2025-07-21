@@ -13,6 +13,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="CryptoManager" Version="1.1.1" />
+    <PackageReference Include="FileIOHelper" Version="1.1.1" />
     <PackageReference Include="S1SocketDataDTO" Version="1.0.0" />
   </ItemGroup>
 

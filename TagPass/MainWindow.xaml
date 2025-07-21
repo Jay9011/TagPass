@@ -11,7 +11,7 @@
         SnapsToDevicePixels="True"
         TextOptions.TextFormattingMode="Display"
         TextOptions.TextRenderingMode="ClearType"
-        Title="TagPass - 컬러 테마 데모" Height="600" Width="900"
+        Title="TagPass - 컬러 테마 데모" Height="720" Width="1024"
         Background="{StaticResource BackgroundColor}">
 
     <Grid>
