@@ -1,0 +1,79 @@
+<UserControl x:Class="TagPass.Views.Components.OverlayPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="1080" d:DesignWidth="1920"
+             UseLayoutRounding="True"
+             SnapsToDevicePixels="True"
+             TextOptions.TextFormattingMode="Display"
+             TextOptions.TextRenderingMode="ClearType">
+    <Grid x:Name="OverlayBackground" 
+          Background="#00000000"
+          MouseDown="OverlayBackground_MouseDown">
+        
+        <!-- 패널 컨테이너 -->
+        <Border x:Name="PanelContainer"
+                Width="{Binding PanelWidth, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                Height="{Binding PanelHeight, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                MaxWidth="1280"
+                MaxHeight="720"
+                Background="{StaticResource CardBackgroundColor}"
+                BorderBrush="{StaticResource BorderColor}"
+                BorderThickness="1"
+                CornerRadius="12"
+                Effect="{StaticResource CardShadow}">
+            
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Style="{StaticResource H1Height}"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                
+                <!-- 헤더 -->
+                <Border Grid.Row="0" 
+                        Background="{StaticResource PrimaryColor}"
+                        CornerRadius="12,12,0,0"
+                        Padding="20,5">
+                    <Grid>
+                        <TextBlock x:Name="TitleTextBlock"
+                                   Text="{Binding Title, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                   Style="{StaticResource H2TextStyle}"
+                                   Foreground="White"
+                                   VerticalAlignment="Center"/>
+                        <Button x:Name="CloseButton"
+                                Content="✕" 
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Center"
+                                Background="Transparent"
+                                Foreground="White"
+                                BorderThickness="0"
+                                FontSize="18"
+                                FontWeight="Bold"
+                                Padding="8"
+                                Cursor="Hand"
+                                Click="CloseButton_Click"/>
+                    </Grid>
+                </Border>
+                
+                <!-- 콘텐츠 영역 -->
+                <ContentPresenter Grid.Row="1" 
+                                  x:Name="ContentArea"
+                                  Content="{Binding PanelContent, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                  Margin="0"/>
+                
+                <!-- 하단 버튼 영역 -->
+                <Border Grid.Row="2" 
+                        x:Name="ButtonArea"
+                        BorderBrush="{StaticResource BorderColor}"
+                        BorderThickness="0,1,0,0"
+                        Padding="20,15"
+                        Visibility="{Binding ShowButtons, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <ContentPresenter Content="{Binding ButtonContent, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                </Border>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl> 

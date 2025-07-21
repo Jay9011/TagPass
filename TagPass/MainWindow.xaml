@@ -5,184 +5,265 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:TagPass"
         xmlns:components="clr-namespace:TagPass.Views.Components"
+        xmlns:views="clr-namespace:TagPass.Views"
         mc:Ignorable="d"
+        UseLayoutRounding="True"
+        SnapsToDevicePixels="True"
+        TextOptions.TextFormattingMode="Display"
+        TextOptions.TextRenderingMode="ClearType"
         Title="TagPass - 컬러 테마 데모" Height="600" Width="900"
         Background="{StaticResource BackgroundColor}">
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <StackPanel Margin="20">
-            
-            <!-- 헤더 섹션 -->
-            <Border Style="{StaticResource CardStyle}">
-                <StackPanel>
-                    <TextBlock Text="TagPass 애플리케이션" 
-                               Style="{StaticResource H1TextStyle}"/>
-                    <TextBlock Text="컬러 테마 시스템 데모" 
-                               Style="{StaticResource BodyTextStyle}"/>
-                </StackPanel>
-            </Border>
-
-            <!-- 버튼 섹션 -->
-            <Border Style="{StaticResource CardStyle}">
-                <StackPanel>
-                    <TextBlock Text="버튼 컬러 예제" 
-                               Style="{StaticResource H3TextStyle}"/>
-                    <WrapPanel>
-                        <Button Content="Primary 버튼" Style="{StaticResource PrimaryButtonStyle}"/>
-                        <Button Content="Secondary 버튼" Style="{StaticResource SecondaryButtonStyle}"/>
-                        <Button Content="Accent 버튼" Style="{StaticResource AccentButtonStyle}"/>
-                    </WrapPanel>
-                </StackPanel>
-            </Border>
-
-            <!-- 상태 컬러 섹션 -->
-            <Border Style="{StaticResource CardStyle}">
-                <StackPanel>
-                    <TextBlock Text="상태 컬러 예제" 
-                               Style="{StaticResource H3TextStyle}"/>
-                    <WrapPanel>
-                        <Border Style="{StaticResource SuccessBadgeStyle}">
-                            <TextBlock Text="성공" Style="{StaticResource BadgeTextStyle}"/>
-                        </Border>
-                        <Border Style="{StaticResource WarningBadgeStyle}">
-                            <TextBlock Text="경고" Style="{StaticResource BadgeTextStyle}"/>
-                        </Border>
-                        <Border Style="{StaticResource ErrorBadgeStyle}">
-                            <TextBlock Text="오류" Style="{StaticResource BadgeTextSecondaryStyle}"/>
-                        </Border>
-                        <Border Style="{StaticResource InfoBadgeStyle}">
-                            <TextBlock Text="정보" Style="{StaticResource BadgeTextStyle}"/>
-                        </Border>
-                    </WrapPanel>
-                </StackPanel>
-            </Border>
-
-            <!-- 입력 필드 섹션 -->
-            <Border Style="{StaticResource CardStyle}">
-                <StackPanel>
-                    <TextBlock Text="입력 필드 예제" 
-                               Style="{StaticResource H3TextStyle}"/>
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="0" Margin="0,0,10,0">
-                            <TextBlock Text="사용자명:" Style="{StaticResource LabelTextStyle}"/>
-                            <TextBox Style="{StaticResource ModernTextBoxStyle}"/>
+    <Grid>
+        <!-- 메인 콘텐츠 -->
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="20">
+                
+                <!-- 단축키 안내 섹션 추가 -->
+                <Border Style="{StaticResource CardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="단축키 안내" 
+                                   Style="{StaticResource H2TextStyle}"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,10">
+                            <TextBlock Text="F12: 설정" Style="{StaticResource BodyTextStyle}" Margin="0,0,20,0"/>
+                            <TextBlock Text="F11: 전체화면 토글" Style="{StaticResource BodyTextStyle}" Margin="0,0,20,0"/>
+                            <TextBlock Text="ESC: 설정 닫기" Style="{StaticResource BodyTextStyle}"/>
+                            <TextBlock Text="F5: 콘솔" Style="{StaticResource BodyTextStyle}" Margin="20,0,0,0"/>
                         </StackPanel>
-                        <StackPanel Grid.Column="1" Margin="10,0,0,0">
-                            <TextBlock Text="비밀번호 (눈 모양 클릭으로 보기/숨기기):" Style="{StaticResource LabelTextStyle}"/>
-                            <components:PasswordBoxWithToggle />
-                        </StackPanel>
-                    </Grid>
-                    
-                    <!-- 추가 입력 필드 예제 -->
-                    <Separator Margin="0,20,0,15" Background="{StaticResource BorderColor}"/>
-                    <TextBlock Text="다양한 입력 필드 스타일:" Style="{StaticResource LabelTextStyle}"/>
-                    <Grid Margin="0,10">
-                        <Grid.RowDefinitions>
-                            <RowDefinition/>
-                            <RowDefinition/>
-                        </Grid.RowDefinitions>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        
-                        <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,10,10">
-                            <TextBlock Text="이메일:" Style="{StaticResource LabelTextStyle}"/>
-                            <TextBox Text="example@email.com" Style="{StaticResource ModernTextBoxStyle}"/>
-                        </StackPanel>
-                        
-                        <StackPanel Grid.Row="0" Grid.Column="1" Margin="10,0,0,10">
-                            <TextBlock Text="기존 패스워드박스:" Style="{StaticResource LabelTextStyle}"/>
-                            <PasswordBox Style="{StaticResource ModernPasswordBoxStyle}"/>
-                        </StackPanel>
-                        
-                        <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,10,10,0">
-                            <TextBlock Text="새 비밀번호:" Style="{StaticResource LabelTextStyle}"/>
-                            <components:PasswordBoxWithToggle />
-                        </StackPanel>
-                        
-                        <StackPanel Grid.Row="1" Grid.Column="1" Margin="10,10,0,0">
-                            <TextBlock Text="비밀번호 확인:" Style="{StaticResource LabelTextStyle}"/>
-                            <components:PasswordBoxWithToggle />
-                        </StackPanel>
-                    </Grid>
-                </StackPanel>
-            </Border>
-
-            <!-- 스타일 미리보기 섹션 -->
-            <Border Style="{StaticResource CardStyle}">
-                <StackPanel>
-                    <TextBlock Text="타이포그래피 예제" 
-                               Style="{StaticResource H3TextStyle}"/>
-                    <StackPanel Margin="0,10">
-                        <TextBlock Text="H1 제목 스타일" Style="{StaticResource H1TextStyle}"/>
-                        <TextBlock Text="H2 제목 스타일" Style="{StaticResource H2TextStyle}"/>
-                        <TextBlock Text="H3 제목 스타일" Style="{StaticResource H3TextStyle}"/>
-                        <TextBlock Text="일반 본문 텍스트 스타일입니다." Style="{StaticResource BodyTextStyle}"/>
-                        <TextBlock Text="라벨 텍스트 스타일" Style="{StaticResource LabelTextStyle}"/>
                     </StackPanel>
-                </StackPanel>
-            </Border>
+                </Border>
+                
+                <!-- 헤더 섹션 -->
+                <Border Style="{StaticResource CardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="TagPass 애플리케이션" 
+                                   Style="{StaticResource H1}"/>
+                        <TextBlock Text="컬러 테마 시스템 데모" 
+                                   Style="{StaticResource BodyTextStyle}"/>
+                    </StackPanel>
+                </Border>
 
-            <!-- 카드 예제 섹션 -->
-            <Border Style="{StaticResource CardStyle}">
-                <StackPanel>
-                    <TextBlock Text="카드 스타일 예제" 
-                               Style="{StaticResource H3TextStyle}"/>
-                    <WrapPanel>
-                        <Border Style="{StaticResource SmallCardStyle}">
-                            <TextBlock Text="작은 카드" Style="{StaticResource BodyTextStyle}"/>
-                        </Border>
-                        <Border Style="{StaticResource SmallCardStyle}">
-                            <TextBlock Text="작은 카드 2" Style="{StaticResource BodyTextStyle}"/>
-                        </Border>
-                        <Border Style="{StaticResource SmallCardStyle}">
-                            <TextBlock Text="작은 카드 3" Style="{StaticResource BodyTextStyle}"/>
-                        </Border>
-                    </WrapPanel>
-                </StackPanel>
-            </Border>
+                <!-- 버튼 섹션 -->
+                <Border Style="{StaticResource CardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="버튼 컬러 예제" 
+                                   Style="{StaticResource H3}"/>
+                        <WrapPanel>
+                            <Button Content="Primary 버튼" Style="{StaticResource PrimaryButtonStyle}"/>
+                            <Button Content="Secondary 버튼" Style="{StaticResource SecondaryButtonStyle}"/>
+                            <Button Content="Accent 버튼" Style="{StaticResource AccentButtonStyle}"/>
+                        </WrapPanel>
+                    </StackPanel>
+                </Border>
 
-            <!-- 컬러 팔레트 섹션 -->
-            <Border Style="{StaticResource CardStyle}">
-                <StackPanel>
-                    <TextBlock Text="컬러 팔레트" 
-                               Style="{StaticResource H3TextStyle}"/>
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition/>
-                            <RowDefinition/>
-                            <RowDefinition/>
-                        </Grid.RowDefinitions>
-                        
-                        <!-- Primary Colors -->
-                        <WrapPanel Grid.Row="0" Margin="0,5">
-                            <Rectangle Width="50" Height="50" Fill="{StaticResource PrimaryColor}" Margin="5"/>
-                            <Rectangle Width="50" Height="50" Fill="{StaticResource PrimaryDarkColor}" Margin="5"/>
-                            <Rectangle Width="50" Height="50" Fill="{StaticResource PrimaryLightColor}" Margin="5"/>
+                <!-- 상태 컬러 섹션 -->
+                <Border Style="{StaticResource CardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="상태 컬러 예제" 
+                                   Style="{StaticResource H3}"/>
+                        <WrapPanel>
+                            <Border Style="{StaticResource SuccessBadgeStyle}">
+                                <TextBlock Text="성공" Style="{StaticResource BadgeTextStyle}"/>
+                            </Border>
+                            <Border Style="{StaticResource WarningBadgeStyle}">
+                                <TextBlock Text="경고" Style="{StaticResource BadgeTextStyle}"/>
+                            </Border>
+                            <Border Style="{StaticResource ErrorBadgeStyle}">
+                                <TextBlock Text="오류" Style="{StaticResource BadgeTextSecondaryStyle}"/>
+                            </Border>
+                            <Border Style="{StaticResource InfoBadgeStyle}">
+                                <TextBlock Text="정보" Style="{StaticResource BadgeTextStyle}"/>
+                            </Border>
                         </WrapPanel>
-                        
-                        <!-- Secondary Colors -->
-                        <WrapPanel Grid.Row="1" Margin="0,5">
-                            <Rectangle Width="50" Height="50" Fill="{StaticResource SecondaryColor}" Margin="5"/>
-                            <Rectangle Width="50" Height="50" Fill="{StaticResource SecondaryDarkColor}" Margin="5"/>
-                            <Rectangle Width="50" Height="50" Fill="{StaticResource SecondaryLightColor}" Margin="5"/>
-                        </WrapPanel>
-                        
-                        <!-- Accent Colors -->
-                        <WrapPanel Grid.Row="2" Margin="0,5">
-                            <Rectangle Width="50" Height="50" Fill="{StaticResource AccentColor}" Margin="5"/>
-                            <Rectangle Width="50" Height="50" Fill="{StaticResource AccentDarkColor}" Margin="5"/>
-                            <Rectangle Width="50" Height="50" Fill="{StaticResource AccentLightColor}" Margin="5"/>
-                        </WrapPanel>
-                    </Grid>
-                </StackPanel>
-            </Border>
+                    </StackPanel>
+                </Border>
 
-        </StackPanel>
-    </ScrollViewer>
+                <!-- 입력 필드 섹션 -->
+                <Border Style="{StaticResource CardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="입력 필드 예제" 
+                                   Style="{StaticResource H3}"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                                <TextBlock Text="사용자명:" Style="{StaticResource LabelTextStyle}"/>
+                                <TextBox Style="{StaticResource ModernTextBoxStyle}"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Margin="10,0,0,0">
+                                <TextBlock Text="비밀번호 (눈 모양 클릭으로 보기/숨기기):" Style="{StaticResource LabelTextStyle}"/>
+                                <components:PasswordBoxWithToggle />
+                            </StackPanel>
+                        </Grid>
+                        
+                        <!-- 추가 입력 필드 예제 -->
+                        <Separator Margin="0,20,0,15" Background="{StaticResource BorderColor}"/>
+                        <TextBlock Text="다양한 입력 필드 스타일:" Style="{StaticResource LabelTextStyle}"/>
+                        <Grid Margin="0,10">
+                            <Grid.RowDefinitions>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,10,10">
+                                <TextBlock Text="이메일:" Style="{StaticResource LabelTextStyle}"/>
+                                <TextBox Text="example@email.com" Style="{StaticResource ModernTextBoxStyle}"/>
+                            </StackPanel>
+                            
+                            <StackPanel Grid.Row="0" Grid.Column="1" Margin="10,0,0,10">
+                                <TextBlock Text="기존 패스워드박스:" Style="{StaticResource LabelTextStyle}"/>
+                                <PasswordBox Style="{StaticResource ModernPasswordBoxStyle}"/>
+                            </StackPanel>
+                            
+                            <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,10,10,0">
+                                <TextBlock Text="새 비밀번호:" Style="{StaticResource LabelTextStyle}"/>
+                                <components:PasswordBoxWithToggle />
+                            </StackPanel>
+                            
+                            <StackPanel Grid.Row="1" Grid.Column="1" Margin="10,10,0,0">
+                                <TextBlock Text="비밀번호 확인:" Style="{StaticResource LabelTextStyle}"/>
+                                <components:PasswordBoxWithToggle />
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- 스타일 미리보기 섹션 -->
+                <Border Style="{StaticResource CardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="타이포그래피 예제" 
+                                   Style="{StaticResource H3}"/>
+                        <StackPanel Margin="0,10">
+                            <TextBlock Text="H1 제목 스타일" Style="{StaticResource H1}"/>
+                            <TextBlock Text="H2 제목 스타일" Style="{StaticResource H2}"/>
+                            <TextBlock Text="H3 제목 스타일" Style="{StaticResource H3}"/>
+                            <TextBlock Text="일반 본문 텍스트 스타일입니다." Style="{StaticResource BodyTextStyle}"/>
+                            <TextBlock Text="라벨 텍스트 스타일" Style="{StaticResource LabelTextStyle}"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- 카드 예제 섹션 -->
+                <Border Style="{StaticResource CardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="카드 스타일 예제" 
+                                   Style="{StaticResource H3}"/>
+                        <WrapPanel>
+                            <Border Style="{StaticResource SmallCardStyle}">
+                                <TextBlock Text="작은 카드" Style="{StaticResource BodyTextStyle}"/>
+                            </Border>
+                            <Border Style="{StaticResource SmallCardStyle}">
+                                <TextBlock Text="작은 카드 2" Style="{StaticResource BodyTextStyle}"/>
+                            </Border>
+                            <Border Style="{StaticResource SmallCardStyle}">
+                                <TextBlock Text="작은 카드 3" Style="{StaticResource BodyTextStyle}"/>
+                            </Border>
+                        </WrapPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- 컬러 팔레트 섹션 -->
+                <Border Style="{StaticResource CardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="컬러 팔레트" 
+                                   Style="{StaticResource H3}"/>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                            </Grid.RowDefinitions>
+                            
+                            <!-- Primary Colors -->
+                            <WrapPanel Grid.Row="0" Margin="0,5">
+                                <Rectangle Width="50" Height="50" Fill="{StaticResource PrimaryColor}" Margin="5"/>
+                                <Rectangle Width="50" Height="50" Fill="{StaticResource PrimaryDarkColor}" Margin="5"/>
+                                <Rectangle Width="50" Height="50" Fill="{StaticResource PrimaryLightColor}" Margin="5"/>
+                            </WrapPanel>
+                            
+                            <!-- Secondary Colors -->
+                            <WrapPanel Grid.Row="1" Margin="0,5">
+                                <Rectangle Width="50" Height="50" Fill="{StaticResource SecondaryColor}" Margin="5"/>
+                                <Rectangle Width="50" Height="50" Fill="{StaticResource SecondaryDarkColor}" Margin="5"/>
+                                <Rectangle Width="50" Height="50" Fill="{StaticResource SecondaryLightColor}" Margin="5"/>
+                            </WrapPanel>
+                            
+                            <!-- Accent Colors -->
+                            <WrapPanel Grid.Row="2" Margin="0,5">
+                                <Rectangle Width="50" Height="50" Fill="{StaticResource AccentColor}" Margin="5"/>
+                                <Rectangle Width="50" Height="50" Fill="{StaticResource AccentDarkColor}" Margin="5"/>
+                                <Rectangle Width="50" Height="50" Fill="{StaticResource AccentLightColor}" Margin="5"/>
+                            </WrapPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- 오버레이 - 설정 -->
+        <components:OverlayPanel x:Name="SettingsOverlay" 
+                                 Title="설정"
+                                 Visibility="Collapsed"
+                                 ShowButtons="True"
+                                 UseAutoSizing="True"
+                                 AutoWidthRatio="0.6"
+                                 AutoHeightRatio="0.8"
+                                 CloseRequested="SettingsOverlay_CloseRequested">
+            
+            <!-- 설정 콘텐츠 -->
+            <components:OverlayPanel.PanelContent>
+                <views:SettingsView ApplySettings="SettingsContent_ApplySettings"
+                                    ResetToDefaults="SettingsContent_ResetToDefaults"/>
+            </components:OverlayPanel.PanelContent>
+            
+            <!-- 오버레이 버튼 영역 -->
+            <components:OverlayPanel.ButtonContent>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Content="기본값 복원" 
+                            Style="{StaticResource SecondaryButtonStyle}"
+                            Margin="0,0,10,0"
+                            Click="ResetDefaults_Click"/>
+                    <Button Content="적용" 
+                            Style="{StaticResource PrimaryButtonStyle}"
+                            Click="ApplySettings_Click"/>
+                </StackPanel>
+            </components:OverlayPanel.ButtonContent>
+        </components:OverlayPanel>
+        
+        <!-- 오버레이 - 디버그 콘솔 -->
+        <components:OverlayPanel x:Name="ConsoleOverlay" 
+                                 Title="콘솔"
+                                 Visibility="Collapsed"
+                                 ShowButtons="True"
+                                 UseAutoSizing="True"
+                                 AutoWidthRatio="0.85"
+                                 AutoHeightRatio="0.9"
+                                 CloseRequested="ConsoleOverlay_CloseRequested">
+            
+            <!-- 콘솔 콘텐츠 -->
+            <components:OverlayPanel.PanelContent>
+                <views:ConsoleView/>
+            </components:OverlayPanel.PanelContent>
+            
+            <!-- 오버레이 버튼 영역 -->
+            <components:OverlayPanel.ButtonContent>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Content="테스트 로그" 
+                            Style="{StaticResource SecondaryButtonStyle}"
+                            Margin="0,0,10,0"
+                            Click="TestLog_Click"/>
+                    <Button Content="콘솔 숨기기" 
+                            Style="{StaticResource PrimaryButtonStyle}"
+                            Click="HideConsole_Click"/>
+                </StackPanel>
+            </components:OverlayPanel.ButtonContent>
+        </components:OverlayPanel>
+    </Grid>
 </Window>
