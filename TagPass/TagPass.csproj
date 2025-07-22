@@ -15,7 +15,8 @@
   <ItemGroup>
     <PackageReference Include="CryptoManager" Version="1.1.1" />
     <PackageReference Include="FileIOHelper" Version="1.1.1" />
+    <PackageReference Include="MQTTnet" Version="5.0.1.1416" />
     <PackageReference Include="S1SocketDataDTO" Version="1.0.0" />
+    <PackageReference Include="SingletonManager" Version="1.5.0" />
   </ItemGroup>
-
 </Project>

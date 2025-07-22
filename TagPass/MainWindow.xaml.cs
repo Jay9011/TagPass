@@ -52,6 +52,19 @@ namespace TagPass
             return consoleView;
         }
 
+        /// <summary>
+        /// SettingsView 인스턴스 가져오기
+        /// </summary>
+        private SettingsView? GetSettingsView()
+        {
+            // SettingsOverlay에서 SettingsView를 찾아서 반환
+            if (SettingsOverlay.PanelContent is SettingsView settingsView)
+            {
+                return settingsView;
+            }
+            return null;
+        }
+
         private void MainWindow_KeyDown(object sender, KeyEventArgs e)
         {
             switch (e.Key)
@@ -113,51 +126,66 @@ namespace TagPass
 
         private void ToggleFullscreen()
         {
-            if (WindowStyle == WindowStyle.None)
+            if (WindowState == WindowState.Maximized && WindowStyle == WindowStyle.None)
             {
-                WindowStyle = WindowStyle.SingleBorderWindow;
                 WindowState = WindowState.Normal;
+                WindowStyle = WindowStyle.SingleBorderWindow;
+                GetConsoleView().LogInfo("창 모드로 전환되었습니다.");
             }
             else
             {
-                WindowStyle = WindowStyle.None;
                 WindowState = WindowState.Maximized;
+                WindowStyle = WindowStyle.None;
+                GetConsoleView().LogInfo("전체화면 모드로 전환되었습니다.");
             }
         }
 
-        // 오버레이 패널 닫기 요청 이벤트
+        // 설정 오버레이 관련 이벤트들
         private void SettingsOverlay_CloseRequested(object sender, RoutedEventArgs e)
         {
             HideSettingsOverlay();
+            GetConsoleView().LogInfo("설정 창이 닫혔습니다.");
         }
 
-        // 콘솔 오버레이 닫기 요청 이벤트
         private void ConsoleOverlay_CloseRequested(object sender, RoutedEventArgs e)
         {
+            GetConsoleView().LogInfo("콘솔을 닫습니다.");
             HideConsoleOverlay();
         }
 
-        // 설정 적용 버튼 클릭
+        // 설정 적용 버튼 클릭 - SettingsView의 실제 메서드 호출
         private void ApplySettings_Click(object sender, RoutedEventArgs e)
         {
-            // 직접 설정 적용 로직 처리
-            MessageBox.Show("설정이 적용되었습니다!", "설정 적용", MessageBoxButton.OK, MessageBoxImage.Information);
-            GetConsoleView().LogInfo("설정이 적용되었습니다.");
-            HideSettingsOverlay();
+            var settingsView = GetSettingsView();
+            if (settingsView != null)
+            {
+                settingsView.OnApplySettings();
+                GetConsoleView().LogInfo("설정 적용이 요청되었습니다.");
+            }
+            else
+            {
+                MessageBox.Show("설정 뷰를 찾을 수 없습니다.", "오류", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
-        // 기본값 복원 버튼 클릭
+        // 기본값 복원 버튼 클릭 - SettingsView의 실제 메서드 호출
         private void ResetDefaults_Click(object sender, RoutedEventArgs e)
         {
-            // 직접 기본값 복원 로직 처리
-            var result = MessageBox.Show("모든 설정을 기본값으로 복원하시겠습니까?", "기본값 복원",
-                                       MessageBoxButton.YesNo, MessageBoxImage.Question);
+            var result = MessageBox.Show("설정을 기본값으로 복원하시겠습니까?", "기본값 복원",
+                MessageBoxButton.YesNo, MessageBoxImage.Question);
 
             if (result == MessageBoxResult.Yes)
             {
-                MessageBox.Show("설정이 기본값으로 복원되었습니다!", "기본값 복원",
-                              MessageBoxButton.OK, MessageBoxImage.Information);
-                GetConsoleView().LogInfo("설정이 기본값으로 복원되었습니다.");
+                var settingsView = GetSettingsView();
+                if (settingsView != null)
+                {
+                    settingsView.OnResetToDefaults();
+                    GetConsoleView().LogInfo("설정 기본값 복원이 요청되었습니다.");
+                }
+                else
+                {
+                    MessageBox.Show("설정 뷰를 찾을 수 없습니다.", "오류", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
         }
 
@@ -180,18 +208,17 @@ namespace TagPass
             HideConsoleOverlay();
         }
 
-        // SettingsView에서 발생한 설정 적용 이벤트
+        // SettingsView에서 발생한 설정 적용 이벤트 (이벤트 기반 처리)
         private void SettingsContent_ApplySettings(object sender, RoutedEventArgs e)
         {
-            // 추가적인 설정 적용 로직이 필요한 경우 여기에 구현
-            MessageBox.Show("SettingsView에서 설정 적용 요청!", "설정 적용", MessageBoxButton.OK, MessageBoxImage.Information);
+            GetConsoleView().LogInfo("설정이 성공적으로 적용되었습니다.");
+            HideSettingsOverlay(); // 설정 적용 후 오버레이 닫기
         }
 
-        // SettingsView에서 발생한 기본값 복원 이벤트
+        // SettingsView에서 발생한 기본값 복원 이벤트 (이벤트 기반 처리)
         private void SettingsContent_ResetToDefaults(object sender, RoutedEventArgs e)
         {
-            // 추가적인 기본값 복원 로직이 필요한 경우 여기에 구현
-            MessageBox.Show("SettingsView에서 기본값 복원 요청!", "기본값 복원", MessageBoxButton.OK, MessageBoxImage.Information);
+            GetConsoleView().LogInfo("설정이 기본값으로 복원되었습니다.");
         }
     }
 }

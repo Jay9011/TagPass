@@ -1,17 +1,16 @@
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
-using System.IO;
-using System.Collections.Generic;
-using FileIOHelper;
-using FileIOHelper.Helpers;
+using SingletonManager;
+using TagPass.Common;
+using TagPass.Services;
+using TagPass.Models;
+using System.ComponentModel;
 
 namespace TagPass.Views
 {
     public partial class SettingsView : UserControl
     {
-        // INI 파일 경로
-        private readonly string settingsFilePath;
-        private IIOHelper iniHelper;
+        private ISettingsService? _settingsService;
 
         #region 이벤트
 
@@ -41,47 +40,50 @@ namespace TagPass.Views
         {
             InitializeComponent();
 
-            // 경로 설정
-            string appDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "TagPass");
-
-            if (!Directory.Exists(appDataPath))
+            // 디자인 타임이 아닐 때만 싱글톤 서비스 초기화
+            if (!DesignerProperties.GetIsInDesignMode(this))
             {
-                Directory.CreateDirectory(appDataPath);
+                // 싱글톤에서 서비스 가져오기
+                _settingsService = Singletons.Instance.GetKeyedSingleton<ISettingsService>(Keys.SettingsService);
+
+                // 설정 로드 (비동기 호출을 동기적으로 처리)
+                Loaded += async (s, e) => await LoadSettingsAsync();
             }
-
-            settingsFilePath = Path.Combine(appDataPath, "settings.ini");
-
-            // ini 파일 헬퍼 초기화
-            iniHelper = new IniFileHelper(settingsFilePath);
-
-            // 설정 로드
-            LoadSettings();
-        }
-
-        public void OnApplySettings()
-        {
-            // 설정 저장
-            SaveSettings();
-            RaiseEvent(new RoutedEventArgs(ApplySettingsEvent, this));
-        }
-
-        public void OnResetToDefaults()
-        {
-            // 기본값으로 복원
-            ResetToDefaultValues();
-            RaiseEvent(new RoutedEventArgs(ResetToDefaultsEvent, this));
+            else
+            {
+                // 디자인 타임에는 기본값으로 UI 설정
+                SetDesignTimeDefaults();
+            }
         }
 
         /// <summary>
-        /// 설정 저장
+        /// 디자인 타임용 기본값 설정
         /// </summary>
-        private void SaveSettings()
+        private void SetDesignTimeDefaults()
         {
+            if (txtBrokerIP != null) txtBrokerIP.Text = "localhost";
+            if (txtBrokerPort != null) txtBrokerPort.Text = "1883";
+            if (txtBrokerTopic != null) txtBrokerTopic.Text = "S1ACCESS/Normal";
+
+            if (chkStartFullscreen != null) chkStartFullscreen.IsChecked = true;
+            if (chkHideTitleBar != null) chkHideTitleBar.IsChecked = true;
+
+            if (chkRegisterStartup != null) chkRegisterStartup.IsChecked = false;
+            if (chkAutoCheckUpdates != null) chkAutoCheckUpdates.IsChecked = true;
+            if (chkSendUsageStats != null) chkSendUsageStats.IsChecked = false;
+        }
+
+        public async void OnApplySettings()
+        {
+            if (_settingsService == null) return;
+
             try
             {
-                iniHelper.WriteValue("Broker", "IP", txtBrokerIP.Text);
-                iniHelper.WriteValue("Broker", "Port", txtBrokerPort.Text);
-                iniHelper.WriteValue("Broker", "Topic", txtBrokerTopic.Text);
+                var settings = GetCurrentUISettings();
+                await _settingsService.SaveSettingsAsync(settings);
+                RaiseEvent(new RoutedEventArgs(ApplySettingsEvent, this));
+
+                MessageBox.Show("설정이 저장되었습니다.", "설정 저장", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
@@ -89,67 +91,16 @@ namespace TagPass.Views
             }
         }
 
-        /// <summary>
-        /// 설정 값 로드
-        /// </summary>
-        private void LoadSettings()
+        public async void OnResetToDefaults()
         {
+            if (_settingsService == null) return;
+
             try
             {
-                if (!File.Exists(settingsFilePath))
-                {
-                    CreateDefaultSettings();
-                    return;
-                }
+                await _settingsService.ResetToDefaultsAsync();
+                await LoadSettingsAsync();
+                RaiseEvent(new RoutedEventArgs(ResetToDefaultsEvent, this));
 
-                string brokerIP = iniHelper.ReadValue("Broker", "IP");
-                string brokerPort = iniHelper.ReadValue("Broker", "Port");
-                string brokerTopic = iniHelper.ReadValue("Broker", "Topic");
-
-                // UI에 값 설정
-                if (!string.IsNullOrEmpty(brokerIP))
-                    txtBrokerIP.Text = brokerIP;
-                if (!string.IsNullOrEmpty(brokerPort))
-                    txtBrokerPort.Text = brokerPort;
-                if (!string.IsNullOrEmpty(brokerTopic))
-                    txtBrokerTopic.Text = brokerTopic;
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"설정 로드 중 오류가 발생했습니다: {ex.Message}", "오류", MessageBoxButton.OK, MessageBoxImage.Warning);
-                CreateDefaultSettings();
-            }
-        }
-
-        /// <summary>
-        /// 초기 설정 값으로 파일 생성
-        /// </summary>
-        private void CreateDefaultSettings()
-        {
-            try
-            {
-                // 기본값 설정
-                txtBrokerIP.Text = "localhost";
-                txtBrokerPort.Text = "1883";
-                txtBrokerTopic.Text = "S1ACCESS/Normal";
-
-                // 설정 저장
-                SaveSettings();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"기본 설정 생성 중 오류가 발생했습니다: {ex.Message}", "오류", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        /// <summary>
-        /// 설정 값을 기본 값으로 재설정
-        /// </summary>
-        public void ResetToDefaultValues()
-        {
-            try
-            {
-                CreateDefaultSettings();
                 MessageBox.Show("설정이 기본값으로 복원되었습니다.", "기본값 복원", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)
@@ -158,5 +109,77 @@ namespace TagPass.Views
             }
         }
 
+        /// <summary>
+        /// 설정 값 로드
+        /// </summary>
+        private async Task LoadSettingsAsync()
+        {
+            if (_settingsService == null) return;
+
+            try
+            {
+                var settings = await _settingsService.LoadSettingsAsync();
+                UpdateUIFromSettings(settings);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"설정 로드 중 오류가 발생했습니다: {ex.Message}", "오류", MessageBoxButton.OK, MessageBoxImage.Warning);
+
+                // 기본값으로 UI 설정
+                var defaultSettings = _settingsService.CreateDefaultSettings();
+                UpdateUIFromSettings(defaultSettings);
+            }
+        }
+
+        /// <summary>
+        /// 현재 UI에서 설정 값 가져오기
+        /// </summary>
+        private ApplicationSettings GetCurrentUISettings()
+        {
+            // 브로커 설정
+            var brokerSettings = new BrokerSettings(
+                txtBrokerIP.Text,
+                txtBrokerPort.Text,
+                txtBrokerTopic.Text
+            );
+
+            // 디스플레이 설정
+            var displaySettings = new DisplaySettings(
+                chkStartFullscreen.IsChecked ?? true,
+                chkHideTitleBar.IsChecked ?? true
+            );
+
+            // 일반 설정
+            var generalSettings = new GeneralSettings(
+                chkRegisterStartup.IsChecked ?? false,
+                chkAutoCheckUpdates.IsChecked ?? true,
+                chkSendUsageStats.IsChecked ?? false
+            );
+
+            return new ApplicationSettings(brokerSettings, displaySettings, generalSettings);
+        }
+
+        /// <summary>
+        /// 설정 값으로 UI 업데이트
+        /// </summary>
+        private void UpdateUIFromSettings(ApplicationSettings settings)
+        {
+            if (settings != null)
+            {
+                // 브로커 설정 업데이트
+                txtBrokerIP.Text = settings.Broker.IP;
+                txtBrokerPort.Text = settings.Broker.Port;
+                txtBrokerTopic.Text = settings.Broker.Topic;
+
+                // 디스플레이 설정 업데이트
+                chkStartFullscreen.IsChecked = settings.Display.StartFullscreen;
+                chkHideTitleBar.IsChecked = settings.Display.HideTitleBar;
+
+                // 일반 설정 업데이트
+                chkRegisterStartup.IsChecked = settings.General.RegisterStartupProgram;
+                chkAutoCheckUpdates.IsChecked = settings.General.AutoCheckUpdates;
+                chkSendUsageStats.IsChecked = settings.General.SendUsageStatistics;
+            }
+        }
     }
 }

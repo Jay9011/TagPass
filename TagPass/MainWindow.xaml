@@ -18,7 +18,7 @@
         <!-- 메인 콘텐츠 -->
         <ScrollViewer VerticalScrollBarVisibility="Auto">
             <StackPanel Margin="20">
-                
+
                 <!-- 단축키 안내 섹션 추가 -->
                 <Border Style="{StaticResource CardStyle}">
                     <StackPanel>
@@ -32,7 +32,7 @@
                         </StackPanel>
                     </StackPanel>
                 </Border>
-                
+
                 <!-- 헤더 섹션 -->
                 <Border Style="{StaticResource CardStyle}">
                     <StackPanel>
@@ -97,7 +97,7 @@
                                 <components:PasswordBoxWithToggle />
                             </StackPanel>
                         </Grid>
-                        
+
                         <!-- 추가 입력 필드 예제 -->
                         <Separator Margin="0,20,0,15" Background="{StaticResource BorderColor}"/>
                         <TextBlock Text="다양한 입력 필드 스타일:" Style="{StaticResource LabelTextStyle}"/>
@@ -110,22 +110,22 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            
+
                             <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,10,10">
                                 <TextBlock Text="이메일:" Style="{StaticResource LabelTextStyle}"/>
                                 <TextBox Text="example@email.com" Style="{StaticResource ModernTextBoxStyle}"/>
                             </StackPanel>
-                            
+
                             <StackPanel Grid.Row="0" Grid.Column="1" Margin="10,0,0,10">
                                 <TextBlock Text="기존 패스워드박스:" Style="{StaticResource LabelTextStyle}"/>
                                 <PasswordBox Style="{StaticResource ModernPasswordBoxStyle}"/>
                             </StackPanel>
-                            
+
                             <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,10,10,0">
                                 <TextBlock Text="새 비밀번호:" Style="{StaticResource LabelTextStyle}"/>
                                 <components:PasswordBoxWithToggle />
                             </StackPanel>
-                            
+
                             <StackPanel Grid.Row="1" Grid.Column="1" Margin="10,10,0,0">
                                 <TextBlock Text="비밀번호 확인:" Style="{StaticResource LabelTextStyle}"/>
                                 <components:PasswordBoxWithToggle />
@@ -179,21 +179,21 @@
                                 <RowDefinition/>
                                 <RowDefinition/>
                             </Grid.RowDefinitions>
-                            
+
                             <!-- Primary Colors -->
                             <WrapPanel Grid.Row="0" Margin="0,5">
                                 <Rectangle Width="50" Height="50" Fill="{StaticResource PrimaryColor}" Margin="5"/>
                                 <Rectangle Width="50" Height="50" Fill="{StaticResource PrimaryDarkColor}" Margin="5"/>
                                 <Rectangle Width="50" Height="50" Fill="{StaticResource PrimaryLightColor}" Margin="5"/>
                             </WrapPanel>
-                            
+
                             <!-- Secondary Colors -->
                             <WrapPanel Grid.Row="1" Margin="0,5">
                                 <Rectangle Width="50" Height="50" Fill="{StaticResource SecondaryColor}" Margin="5"/>
                                 <Rectangle Width="50" Height="50" Fill="{StaticResource SecondaryDarkColor}" Margin="5"/>
                                 <Rectangle Width="50" Height="50" Fill="{StaticResource SecondaryLightColor}" Margin="5"/>
                             </WrapPanel>
-                            
+
                             <!-- Accent Colors -->
                             <WrapPanel Grid.Row="2" Margin="0,5">
                                 <Rectangle Width="50" Height="50" Fill="{StaticResource AccentColor}" Margin="5"/>
@@ -216,13 +216,13 @@
                                  AutoWidthRatio="0.6"
                                  AutoHeightRatio="0.8"
                                  CloseRequested="SettingsOverlay_CloseRequested">
-            
+
             <!-- 설정 콘텐츠 -->
             <components:OverlayPanel.PanelContent>
                 <views:SettingsView ApplySettings="SettingsContent_ApplySettings"
                                     ResetToDefaults="SettingsContent_ResetToDefaults"/>
             </components:OverlayPanel.PanelContent>
-            
+
             <!-- 오버레이 버튼 영역 -->
             <components:OverlayPanel.ButtonContent>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
@@ -236,7 +236,7 @@
                 </StackPanel>
             </components:OverlayPanel.ButtonContent>
         </components:OverlayPanel>
-        
+
         <!-- 오버레이 - 디버그 콘솔 -->
         <components:OverlayPanel x:Name="ConsoleOverlay" 
                                  Title="콘솔"
@@ -246,12 +246,12 @@
                                  AutoWidthRatio="0.85"
                                  AutoHeightRatio="0.9"
                                  CloseRequested="ConsoleOverlay_CloseRequested">
-            
+
             <!-- 콘솔 콘텐츠 -->
             <components:OverlayPanel.PanelContent>
                 <views:ConsoleView/>
             </components:OverlayPanel.PanelContent>
-            
+
             <!-- 오버레이 버튼 영역 -->
             <components:OverlayPanel.ButtonContent>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">

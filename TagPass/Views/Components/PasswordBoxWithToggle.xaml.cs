@@ -1,4 +1,4 @@
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 
 namespace TagPass.Views.Components
@@ -18,12 +18,12 @@ namespace TagPass.Views.Components
         {
             var control = (PasswordBoxWithToggle)d;
             var newPassword = e.NewValue as string ?? string.Empty;
-            
+
             if (control.PasswordBox.Password != newPassword)
             {
                 control.PasswordBox.Password = newPassword;
             }
-            
+
             if (control.TextBox.Text != newPassword)
             {
                 control.TextBox.Text = newPassword;
@@ -33,7 +33,7 @@ namespace TagPass.Views.Components
         public PasswordBoxWithToggle()
         {
             InitializeComponent();
-            
+
             // Focus 이벤트 처리
             PasswordBox.GotFocus += OnGotFocus;
             PasswordBox.LostFocus += OnLostFocus;
@@ -66,7 +66,7 @@ namespace TagPass.Views.Components
         private void ToggleButton_Click(object sender, RoutedEventArgs e)
         {
             var isChecked = ToggleButton.IsChecked == true;
-            
+
             if (isChecked)
             {
                 // 비밀번호 보이기
