@@ -1,15 +1,39 @@
 ﻿using FileIOHelper;
 using TagPass.Common;
+using System.ComponentModel;
 
 namespace TagPass.Models
 {
     /// <summary>
-    /// 화면 관련 설정
+    /// 화면 관련 설정 모델
     /// </summary>
-    public class DisplaySettings
+    public class DisplaySettings : INotifyPropertyChanged
     {
-        public bool StartFullscreen { get; set; } = true;
-        public bool HideTitleBar { get; set; } = true;
+        private bool _startFullscreen = true;
+        private bool _hideTitleBar = true;
+
+        public bool StartFullscreen
+        {
+            get => _startFullscreen;
+            set
+            {
+                _startFullscreen = value;
+                OnPropertyChanged(nameof(StartFullscreen));
+            }
+        }
+
+        /// <summary>
+        /// 타이틀 바 숨김
+        /// </summary>
+        public bool HideTitleBar
+        {
+            get => _hideTitleBar;
+            set
+            {
+                _hideTitleBar = value;
+                OnPropertyChanged(nameof(HideTitleBar));
+            }
+        }
 
         public DisplaySettings()
         {
@@ -24,7 +48,6 @@ namespace TagPass.Models
         public bool IsValid(out string errorMessage)
         {
             errorMessage = string.Empty;
-            // 화면 설정은 현재 특별한 검증이 필요 없음
             return true;
         }
 
@@ -50,5 +73,16 @@ namespace TagPass.Models
             iniHelper.WriteValue(StringClass.Display, StringClass.StartFullscreen, StartFullscreen.ToString());
             iniHelper.WriteValue(StringClass.Display, StringClass.HideTitleBar, HideTitleBar.ToString());
         }
+
+        #region INotifyPropertyChanged
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        protected virtual void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        #endregion
     }
 }

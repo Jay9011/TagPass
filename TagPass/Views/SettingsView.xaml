@@ -3,127 +3,149 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:components="clr-namespace:TagPass.Views.Components"
              mc:Ignorable="d" 
              d:DesignHeight="600" d:DesignWidth="500">
-    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="20">
-        <StackPanel>
-            <!-- 브로커 설정 -->
-            <Border Style="{StaticResource CardStyle}">
+    
+    <components:OverlayPanel x:Name="SettingsOverlayPanel"
+                             Title="설정"
+                             ShowButtons="True"
+                             UseAutoSizing="True"
+                             AutoWidthRatio="0.6"
+                             AutoHeightRatio="0.8"
+                             CloseRequested="SettingsOverlayPanel_CloseRequested">
+        
+        <!-- 설정 콘텐츠 -->
+        <components:OverlayPanel.PanelContent>
+            <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="20">
                 <StackPanel>
-                    <TextBlock Text="브로커 설정" Style="{StaticResource H3TextStyle}"/>
+                    <!-- 브로커 설정 -->
+                    <Border Style="{StaticResource CardStyle}">
+                        <StackPanel>
+                            <TextBlock Text="브로커 설정" Style="{StaticResource H3TextStyle}"/>
 
-                    <Grid Margin="0,10,0,10">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-                        
-                        <!-- IP 설정 -->
-                        <TextBlock Grid.Row="0" Grid.Column="0" 
-                                   Text="IP:" 
-                                   Style="{StaticResource LabelTextStyle}" 
-                                   VerticalAlignment="Center"
-                                   Margin="0,0,15,8"/>
-                        <TextBox Grid.Row="0" Grid.Column="1"
-                                 Name="txtBrokerIP" 
-                                 Text="127.0.0.1"
-                                 Style="{StaticResource ModernTextBoxSStyle}"
-                                 Margin="0,0,0,8"/>
-                        
-                        <!-- Port 설정 -->
-                        <TextBlock Grid.Row="1" Grid.Column="0" 
-                                   Text="Port:" 
-                                   Style="{StaticResource LabelTextStyle}" 
-                                   VerticalAlignment="Center"
-                                   Margin="0,0,15,8"/>
-                        <TextBox Grid.Row="1" Grid.Column="1"
-                                 Name="txtBrokerPort" 
-                                 Text="1883"
-                                 Style="{StaticResource ModernTextBoxSStyle}"
-                                 Margin="0,0,0,8"/>
-                        
-                        <!-- Topic 설정 -->
-                        <TextBlock Grid.Row="2" Grid.Column="0" 
-                                   Text="토픽:" 
-                                   Style="{StaticResource LabelTextStyle}" 
-                                   VerticalAlignment="Center"
-                                   Margin="0,0,15,0"/>
-                        <TextBox Grid.Row="2" Grid.Column="1"
-                                 Name="txtBrokerTopic" 
-                                 Text="TagPass/data"
-                                 Style="{StaticResource ModernTextBoxSStyle}"/>
-                    </Grid>
+                            <Grid Margin="0,10,0,10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                
+                                <!-- IP 설정 -->
+                                <TextBlock Grid.Row="0" Grid.Column="0" 
+                                           Text="IP:" 
+                                           Style="{StaticResource LabelTextStyle}" 
+                                           VerticalAlignment="Center"
+                                           Margin="0,0,15,8"/>
+                                <TextBox Grid.Row="0" Grid.Column="1"
+                                         Text="{Binding Broker.IP, UpdateSourceTrigger=PropertyChanged}"
+                                         Style="{StaticResource ModernTextBoxSStyle}"
+                                         Margin="0,0,0,8"/>
+                                
+                                <!-- Port 설정 -->
+                                <TextBlock Grid.Row="1" Grid.Column="0" 
+                                           Text="Port:" 
+                                           Style="{StaticResource LabelTextStyle}" 
+                                           VerticalAlignment="Center"
+                                           Margin="0,0,15,8"/>
+                                <TextBox Grid.Row="1" Grid.Column="1"
+                                         Text="{Binding Broker.Port, UpdateSourceTrigger=PropertyChanged}"
+                                         Style="{StaticResource ModernTextBoxSStyle}"
+                                         Margin="0,0,0,8"/>
+                                
+                                <!-- Topic 설정 -->
+                                <TextBlock Grid.Row="2" Grid.Column="0" 
+                                           Text="토픽:" 
+                                           Style="{StaticResource LabelTextStyle}" 
+                                           VerticalAlignment="Center"
+                                           Margin="0,0,15,0"/>
+                                <TextBox Grid.Row="2" Grid.Column="1"
+                                         Text="{Binding Broker.Topic, UpdateSourceTrigger=PropertyChanged}"
+                                         Style="{StaticResource ModernTextBoxSStyle}"/>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 화면 설정 -->
+                    <Border Style="{StaticResource CardStyle}">
+                        <StackPanel>
+                            <TextBlock Text="화면 설정" Style="{StaticResource H3TextStyle}"/>
+                            <CheckBox Content="시작 시 전체화면" 
+                                      IsChecked="{Binding Display.StartFullscreen}"
+                                      Margin="0,10"
+                                      Style="{StaticResource ModernCheckBoxStyle}"/>
+                            <CheckBox Content="타이틀바 숨기기" 
+                                      IsChecked="{Binding Display.HideTitleBar}"
+                                      Style="{StaticResource ModernCheckBoxStyle}"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 일반 설정 -->
+                    <Border Style="{StaticResource CardStyle}">
+                        <StackPanel>
+                            <TextBlock Text="일반 설정" Style="{StaticResource H3TextStyle}"/>
+                            <CheckBox Content="시작 프로그램에 등록" 
+                                      IsChecked="{Binding General.RegisterStartupProgram}"
+                                      Margin="0,10,0,5"
+                                      Style="{StaticResource ModernCheckBoxStyle}"/>
+                            <CheckBox Content="업데이트 자동 확인" 
+                                      IsChecked="{Binding General.AutoCheckUpdates}"
+                                      Margin="0,5"
+                                      Style="{StaticResource ModernCheckBoxStyle}"/>
+                            <CheckBox Content="사용 통계 전송" 
+                                      IsChecked="{Binding General.SendUsageStatistics}"
+                                      Margin="0,5"
+                                      Style="{StaticResource ModernCheckBoxStyle}"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 단축키 설정 -->
+                    <Border Style="{StaticResource CardStyle}">
+                        <StackPanel>
+                            <TextBlock Text="단축키 설정" Style="{StaticResource H3TextStyle}"/>
+                            <Grid Margin="0,10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                </Grid.RowDefinitions>
+
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="설정 열기:" Style="{StaticResource LabelTextStyle}"/>
+                                <TextBlock Grid.Row="0" Grid.Column="1" Text="F12" Style="{StaticResource BodyTextStyle}"/>
+
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="전체화면 토글:" Style="{StaticResource LabelTextStyle}"/>
+                                <TextBlock Grid.Row="1" Grid.Column="1" Text="F11" Style="{StaticResource BodyTextStyle}"/>
+
+                                <TextBlock Grid.Row="2" Grid.Column="0" Text="설정 닫기:" Style="{StaticResource LabelTextStyle}"/>
+                                <TextBlock Grid.Row="2" Grid.Column="1" Text="ESC" Style="{StaticResource BodyTextStyle}"/>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
                 </StackPanel>
-            </Border>
-
-            <!-- 화면 설정 -->
-            <Border Style="{StaticResource CardStyle}">
-                <StackPanel>
-                    <TextBlock Text="화면 설정" Style="{StaticResource H3TextStyle}"/>
-                    <CheckBox Name="chkStartFullscreen"
-                              Content="시작 시 전체화면" 
-                              IsChecked="True" 
-                              Margin="0,10"
-                              Style="{StaticResource ModernCheckBoxStyle}"/>
-                    <CheckBox Name="chkHideTitleBar"
-                              Content="타이틀바 숨기기" 
-                              IsChecked="True" 
-                              Style="{StaticResource ModernCheckBoxStyle}"/>
-                </StackPanel>
-            </Border>
-
-            <!-- 일반 설정 -->
-            <Border Style="{StaticResource CardStyle}">
-                <StackPanel>
-                    <TextBlock Text="일반 설정" Style="{StaticResource H3TextStyle}"/>
-                    <CheckBox Name="chkRegisterStartup"
-                              Content="시작 프로그램에 등록" 
-                              Margin="0,10,0,5"
-                              Style="{StaticResource ModernCheckBoxStyle}"/>
-                    <CheckBox Name="chkAutoCheckUpdates"
-                              Content="업데이트 자동 확인" 
-                              IsChecked="True"
-                              Margin="0,5"
-                              Style="{StaticResource ModernCheckBoxStyle}"/>
-                    <CheckBox Name="chkSendUsageStats"
-                              Content="사용 통계 전송" 
-                              Margin="0,5"
-                              Style="{StaticResource ModernCheckBoxStyle}"/>
-                </StackPanel>
-            </Border>
-
-            <!-- 단축키 설정 -->
-            <Border Style="{StaticResource CardStyle}">
-                <StackPanel>
-                    <TextBlock Text="단축키 설정" Style="{StaticResource H3TextStyle}"/>
-                    <Grid Margin="0,10">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition/>
-                            <RowDefinition/>
-                            <RowDefinition/>
-                        </Grid.RowDefinitions>
-
-                        <TextBlock Grid.Row="0" Grid.Column="0" Text="설정 열기:" Style="{StaticResource LabelTextStyle}"/>
-                        <TextBlock Grid.Row="0" Grid.Column="1" Text="F12" Style="{StaticResource BodyTextStyle}"/>
-
-                        <TextBlock Grid.Row="1" Grid.Column="0" Text="전체화면 토글:" Style="{StaticResource LabelTextStyle}"/>
-                        <TextBlock Grid.Row="1" Grid.Column="1" Text="F11" Style="{StaticResource BodyTextStyle}"/>
-
-                        <TextBlock Grid.Row="2" Grid.Column="0" Text="설정 닫기:" Style="{StaticResource LabelTextStyle}"/>
-                        <TextBlock Grid.Row="2" Grid.Column="1" Text="ESC" Style="{StaticResource BodyTextStyle}"/>
-                    </Grid>
-                </StackPanel>
-            </Border>
-
-        </StackPanel>
-    </ScrollViewer>
+            </ScrollViewer>
+        </components:OverlayPanel.PanelContent>
+        
+        <!-- 버튼 영역 -->
+        <components:OverlayPanel.ButtonContent>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="기본값 복원" 
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        Margin="0,0,10,0"
+                        Click="ResetDefaults_Click"/>
+                <Button Content="적용" 
+                        Style="{StaticResource PrimaryButtonStyle}"
+                        Click="ApplySettings_Click"/>
+            </StackPanel>
+        </components:OverlayPanel.ButtonContent>
+    </components:OverlayPanel>
+    
 </UserControl> 

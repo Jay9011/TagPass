@@ -5,12 +5,25 @@ using TagPass.Common;
 using TagPass.Services;
 using TagPass.Models;
 using System.ComponentModel;
+using System.Collections.Generic;
 
 namespace TagPass.Views
 {
     public partial class SettingsView : UserControl
     {
-        private ISettingsService? _settingsService;
+        private ISettingsService? settingsService;
+
+        // ApplicationSettings를 DataContext로 사용
+        private ApplicationSettings _settings;
+        public ApplicationSettings Settings
+        {
+            get => _settings ?? new ApplicationSettings();
+            set
+            {
+                _settings = value;
+                DataContext = _settings;
+            }
+        }
 
         #region 이벤트
 
@@ -34,6 +47,16 @@ namespace TagPass.Views
             remove { RemoveHandler(ResetToDefaultsEvent, value); }
         }
 
+        // 설정 창 닫기 이벤트
+        public static readonly RoutedEvent SettingsClosedEvent =
+            EventManager.RegisterRoutedEvent("SettingsClosed", RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(SettingsView));
+
+        public event RoutedEventHandler SettingsClosed
+        {
+            add { AddHandler(SettingsClosedEvent, value); }
+            remove { RemoveHandler(SettingsClosedEvent, value); }
+        }
+
         #endregion
 
         public SettingsView()
@@ -44,7 +67,7 @@ namespace TagPass.Views
             if (!DesignerProperties.GetIsInDesignMode(this))
             {
                 // 싱글톤에서 서비스 가져오기
-                _settingsService = Singletons.Instance.GetKeyedSingleton<ISettingsService>(Keys.SettingsService);
+                settingsService = Singletons.Instance.GetKeyedSingleton<ISettingsService>(Keys.SettingsService);
 
                 // 설정 로드 (비동기 호출을 동기적으로 처리)
                 Loaded += async (s, e) => await LoadSettingsAsync();
@@ -61,33 +84,26 @@ namespace TagPass.Views
         /// </summary>
         private void SetDesignTimeDefaults()
         {
-            if (txtBrokerIP != null) txtBrokerIP.Text = "localhost";
-            if (txtBrokerPort != null) txtBrokerPort.Text = "1883";
-            if (txtBrokerTopic != null) txtBrokerTopic.Text = "S1ACCESS/Normal";
-
-            if (chkStartFullscreen != null) chkStartFullscreen.IsChecked = true;
-            if (chkHideTitleBar != null) chkHideTitleBar.IsChecked = true;
-
-            if (chkRegisterStartup != null) chkRegisterStartup.IsChecked = false;
-            if (chkAutoCheckUpdates != null) chkAutoCheckUpdates.IsChecked = true;
-            if (chkSendUsageStats != null) chkSendUsageStats.IsChecked = false;
+            Settings = new ApplicationSettings();
         }
 
         public async void OnApplySettings()
         {
-            if (_settingsService == null) return;
+            if (settingsService == null || Settings == null) return;
 
             try
             {
-                var settings = GetCurrentUISettings();
-                await _settingsService.SaveSettingsAsync(settings);
+                await settingsService.SaveSettingsAsync(Settings);
 
                 // MQTT 서비스에 새로운 설정 적용
-                await UpdateMqttConnection(settings);
+                await UpdateMqttConnection(Settings);
 
                 RaiseEvent(new RoutedEventArgs(ApplySettingsEvent, this));
 
                 MessageBox.Show("설정이 저장되었습니다.", "설정 저장", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                // 설정 적용 후 창 닫기
+                RaiseEvent(new RoutedEventArgs(SettingsClosedEvent, this));
             }
             catch (Exception ex)
             {
@@ -124,11 +140,11 @@ namespace TagPass.Views
 
         public async void OnResetToDefaults()
         {
-            if (_settingsService == null) return;
+            if (settingsService == null) return;
 
             try
             {
-                await _settingsService.ResetToDefaultsAsync();
+                await settingsService.ResetToDefaultsAsync();
                 await LoadSettingsAsync();
                 RaiseEvent(new RoutedEventArgs(ResetToDefaultsEvent, this));
 
@@ -145,72 +161,77 @@ namespace TagPass.Views
         /// </summary>
         private async Task LoadSettingsAsync()
         {
-            if (_settingsService == null) return;
+            if (settingsService == null) return;
 
             try
             {
-                var settings = await _settingsService.LoadSettingsAsync();
-                UpdateUIFromSettings(settings);
+                var settings = await settingsService.LoadSettingsAsync();
+                Settings = settings; // DataContext 자동 설정됨
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"설정 로드 중 오류가 발생했습니다: {ex.Message}", "오류", MessageBoxButton.OK, MessageBoxImage.Warning);
 
                 // 기본값으로 UI 설정
-                var defaultSettings = _settingsService.CreateDefaultSettings();
-                UpdateUIFromSettings(defaultSettings);
+                var defaultSettings = settingsService.CreateDefaultSettings();
+                Settings = defaultSettings;
             }
         }
 
+        #region 이벤트 핸들러
+
         /// <summary>
-        /// 현재 UI에서 설정 값 가져오기
+        /// 설정 오버레이 닫기 요청 이벤트
         /// </summary>
-        private ApplicationSettings GetCurrentUISettings()
+        private void SettingsOverlayPanel_CloseRequested(object sender, RoutedEventArgs e)
         {
-            // 브로커 설정
-            var brokerSettings = new BrokerSettings(
-                txtBrokerIP.Text,
-                txtBrokerPort.Text,
-                txtBrokerTopic.Text
-            );
-
-            // 디스플레이 설정
-            var displaySettings = new DisplaySettings(
-                chkStartFullscreen.IsChecked ?? true,
-                chkHideTitleBar.IsChecked ?? true
-            );
-
-            // 일반 설정
-            var generalSettings = new GeneralSettings(
-                chkRegisterStartup.IsChecked ?? false,
-                chkAutoCheckUpdates.IsChecked ?? true,
-                chkSendUsageStats.IsChecked ?? false
-            );
-
-            return new ApplicationSettings(brokerSettings, displaySettings, generalSettings);
+            // 상위로 이벤트 전파
+            RaiseEvent(new RoutedEventArgs(SettingsClosedEvent, this));
         }
 
         /// <summary>
-        /// 설정 값으로 UI 업데이트
+        /// 적용 버튼 클릭 이벤트
         /// </summary>
-        private void UpdateUIFromSettings(ApplicationSettings settings)
+        private void ApplySettings_Click(object sender, RoutedEventArgs e)
         {
-            if (settings != null)
+            OnApplySettings();
+        }
+
+        /// <summary>
+        /// 기본값 복원 버튼 클릭 이벤트
+        /// </summary>
+        private void ResetDefaults_Click(object sender, RoutedEventArgs e)
+        {
+            var result = MessageBox.Show("설정을 기본값으로 복원하시겠습니까?", "기본값 복원",
+                                       MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+            if (result == MessageBoxResult.Yes)
             {
-                // 브로커 설정 업데이트
-                txtBrokerIP.Text = settings.Broker.IP;
-                txtBrokerPort.Text = settings.Broker.Port;
-                txtBrokerTopic.Text = settings.Broker.Topic;
-
-                // 디스플레이 설정 업데이트
-                chkStartFullscreen.IsChecked = settings.Display.StartFullscreen;
-                chkHideTitleBar.IsChecked = settings.Display.HideTitleBar;
-
-                // 일반 설정 업데이트
-                chkRegisterStartup.IsChecked = settings.General.RegisterStartupProgram;
-                chkAutoCheckUpdates.IsChecked = settings.General.AutoCheckUpdates;
-                chkSendUsageStats.IsChecked = settings.General.SendUsageStatistics;
+                OnResetToDefaults();
             }
         }
+
+        #endregion
+
+        #region 공개 메서드
+
+        /// <summary>
+        /// 설정 표시
+        /// </summary>
+        public void Show()
+        {
+            this.Visibility = Visibility.Visible;
+            SettingsOverlayPanel.Focus();
+        }
+
+        /// <summary>
+        /// 설정 숨기기
+        /// </summary>
+        public void Hide()
+        {
+            this.Visibility = Visibility.Collapsed;
+        }
+
+        #endregion
     }
 }

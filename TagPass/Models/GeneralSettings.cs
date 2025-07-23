@@ -1,16 +1,47 @@
 ﻿using FileIOHelper;
 using TagPass.Common;
+using System.ComponentModel;
 
 namespace TagPass.Models
 {
     /// <summary>
-    /// 일반 애플리케이션 설정
+    /// 일반 애플리케이션 설정 모델
     /// </summary>
-    public class GeneralSettings
+    public class GeneralSettings : INotifyPropertyChanged
     {
-        public bool RegisterStartupProgram { get; set; } = false;
-        public bool AutoCheckUpdates { get; set; } = true;
-        public bool SendUsageStatistics { get; set; } = false;
+        private bool _registerStartupProgram = false;
+        private bool _autoCheckUpdates = true;
+        private bool _sendUsageStatistics = false;
+
+        public bool RegisterStartupProgram
+        {
+            get => _registerStartupProgram;
+            set
+            {
+                _registerStartupProgram = value;
+                OnPropertyChanged(nameof(RegisterStartupProgram));
+            }
+        }
+
+        public bool AutoCheckUpdates
+        {
+            get => _autoCheckUpdates;
+            set
+            {
+                _autoCheckUpdates = value;
+                OnPropertyChanged(nameof(AutoCheckUpdates));
+            }
+        }
+
+        public bool SendUsageStatistics
+        {
+            get => _sendUsageStatistics;
+            set
+            {
+                _sendUsageStatistics = value;
+                OnPropertyChanged(nameof(SendUsageStatistics));
+            }
+        }
 
         public GeneralSettings()
         {
@@ -55,5 +86,16 @@ namespace TagPass.Models
             iniHelper.WriteValue(StringClass.General, StringClass.AutoCheckUpdates, AutoCheckUpdates.ToString());
             iniHelper.WriteValue(StringClass.General, StringClass.SendUsageStatistics, SendUsageStatistics.ToString());
         }
+
+        #region INotifyPropertyChanged 구현
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        protected virtual void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        #endregion
     }
 }

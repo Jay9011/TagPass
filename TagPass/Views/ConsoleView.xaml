@@ -2,124 +2,147 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:components="clr-namespace:TagPass.Views.Components"
              mc:Ignorable="d" 
-             d:DesignHeight="600" d:DesignWidth="800">
+             d:DesignHeight="720" d:DesignWidth="1024">
     
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
+    <components:OverlayPanel x:Name="ConsoleOverlayPanel"
+                             Title="콘솔"
+                             ShowButtons="True"
+                             UseAutoSizing="True"
+                             AutoWidthRatio="0.85"
+                             AutoHeightRatio="0.9"
+                             CloseRequested="ConsoleOverlayPanel_CloseRequested">
         
-        <!-- 상단 도구모음 -->
-        <Border Grid.Row="0" 
-                Background="{StaticResource SurfaceColor}"
-                BorderBrush="{StaticResource BorderColor}"
-                BorderThickness="0,0,0,1"
-                Padding="15,10">
+        <!-- 콘솔 콘텐츠 -->
+        <components:OverlayPanel.PanelContent>
             <Grid>
-                <StackPanel Orientation="Horizontal">
-                    <Button Content="지우기" 
-                            Style="{StaticResource SecondaryButtonStyle}"
-                            Click="ClearConsole_Click"
-                            Margin="0,0,10,0"/>
-                    <Button Content="복사" 
-                            Style="{StaticResource SecondaryButtonStyle}"
-                            Click="CopyConsole_Click"
-                            Margin="0,0,10,0"/>
-                    <Button Content="검색" 
-                            Style="{StaticResource SecondaryButtonStyle}"
-                            Click="SearchConsole_Click"/>
-                </StackPanel>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
                 
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                    <TextBlock Text="라인 수: " 
-                               Style="{StaticResource LabelTextStyle}"
-                               VerticalAlignment="Center"/>
-                    <TextBlock x:Name="LineCountText" 
-                               Text="0" 
-                               Style="{StaticResource BodyTextStyle}"
-                               VerticalAlignment="Center"
-                               Margin="0,0,15,0"/>
-                    <CheckBox x:Name="AutoScrollCheckBox"
-                              Content="자동 스크롤" 
-                              IsChecked="True"
-                              Style="{StaticResource ModernCheckBoxStyle}"
-                              VerticalAlignment="Center"/>
-                </StackPanel>
+                <!-- 상단 도구모음 -->
+                <Border Grid.Row="0" 
+                        Background="{StaticResource SurfaceColor}"
+                        BorderBrush="{StaticResource BorderColor}"
+                        BorderThickness="0,0,0,1"
+                        Padding="15,10">
+                    <Grid>
+                        <StackPanel Orientation="Horizontal">
+                            <Button Content="지우기" 
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Click="ClearConsole_Click"
+                                    Margin="0,0,10,0"/>
+                            <Button Content="복사" 
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Click="CopyConsole_Click"
+                                    Margin="0,0,10,0"/>
+                            <Button Content="검색" 
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Click="SearchConsole_Click"/>
+                        </StackPanel>
+                        
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                            <TextBlock Text="라인 수: " 
+                                       Style="{StaticResource LabelTextStyle}"
+                                       VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding LineCount}" 
+                                       Style="{StaticResource BodyTextStyle}"
+                                       VerticalAlignment="Center"
+                                       Margin="0,0,15,0"/>
+                            <CheckBox Content="자동 스크롤" 
+                                      IsChecked="{Binding AutoScrollEnabled}"
+                                      Style="{StaticResource ModernCheckBoxStyle}"
+                                      VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+                
+                <!-- 콘솔 출력 영역 -->
+                <Border Grid.Row="1" 
+                        Background="White"
+                        BorderBrush="{StaticResource BorderColor}"
+                        BorderThickness="1"
+                        Margin="15,10,15,0">
+                    <TextBox Text="{Binding ConsoleText}"
+                             IsReadOnly="True"
+                             Background="White"
+                             Foreground="Black"
+                             FontFamily="Consolas, Courier New, monospace"
+                             FontSize="14"
+                             VerticalScrollBarVisibility="Auto"
+                             HorizontalScrollBarVisibility="Auto"
+                             TextWrapping="NoWrap"
+                             BorderThickness="0"
+                             Padding="10"
+                             VerticalAlignment="Stretch"
+                             HorizontalAlignment="Stretch"/>
+                </Border>
+                
+                <!-- 검색 바 (기본적으로 숨김) -->
+                <Border Grid.Row="2" 
+                        Background="{StaticResource SurfaceColor}"
+                        BorderBrush="{StaticResource BorderColor}"
+                        BorderThickness="0,1,0,0"
+                        Padding="15,10"
+                        Visibility="{Binding SearchBarVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <TextBlock Grid.Column="0" 
+                                   Text="검색:" 
+                                   Style="{StaticResource LabelTextStyle}"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,10,0"/>
+                        
+                        <TextBox Grid.Column="1" 
+                                 Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                                 Style="{StaticResource ModernTextBoxStyle}"
+                                 KeyDown="SearchTextBox_KeyDown"
+                                 Margin="0,0,10,0"/>
+                        
+                        <Button Grid.Column="2" 
+                                Content="이전" 
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                Click="FindPrevious_Click"
+                                Margin="0,0,5,0"/>
+                        
+                        <Button Grid.Column="3" 
+                                Content="다음" 
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                Click="FindNext_Click"
+                                Margin="0,0,10,0"/>
+                        
+                        <Button Grid.Column="4" 
+                                Content="✕" 
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                Click="CloseSearch_Click"/>
+                    </Grid>
+                </Border>
             </Grid>
-        </Border>
+        </components:OverlayPanel.PanelContent>
         
-        <!-- 콘솔 출력 영역 -->
-        <Border Grid.Row="1" 
-                Background="White"
-                BorderBrush="{StaticResource BorderColor}"
-                BorderThickness="1"
-                Margin="15,10,15,0">
-            <TextBox x:Name="ConsoleTextBox"
-                     IsReadOnly="True"
-                     Background="White"
-                     Foreground="Black"
-                     FontFamily="Consolas, Courier New, monospace"
-                     FontSize="14"
-                     VerticalScrollBarVisibility="Auto"
-                     HorizontalScrollBarVisibility="Auto"
-                     TextWrapping="NoWrap"
-                     BorderThickness="0"
-                     Padding="10"
-                     VerticalAlignment="Stretch"
-                     HorizontalAlignment="Stretch"
-                     Text="TagPass 콘솔 창&#x0A;========================================&#x0A;&#x0A;콘솔이 준비되었습니다.&#x0A;"/>
-        </Border>
-        
-        <!-- 검색 바 (기본적으로 숨김) -->
-        <Border Grid.Row="2" 
-                x:Name="SearchBar"
-                Background="{StaticResource SurfaceColor}"
-                BorderBrush="{StaticResource BorderColor}"
-                BorderThickness="0,1,0,0"
-                Padding="15,10"
-                Visibility="Collapsed">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                
-                <TextBlock Grid.Column="0" 
-                           Text="검색:" 
-                           Style="{StaticResource LabelTextStyle}"
-                           VerticalAlignment="Center"
-                           Margin="0,0,10,0"/>
-                
-                <TextBox Grid.Column="1" 
-                         x:Name="SearchTextBox"
-                         Style="{StaticResource ModernTextBoxStyle}"
-                         KeyDown="SearchTextBox_KeyDown"
-                         Margin="0,0,10,0"/>
-                
-                <Button Grid.Column="2" 
-                        Content="이전" 
+        <!-- 오버레이 버튼 영역 -->
+        <components:OverlayPanel.ButtonContent>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="테스트 로그" 
                         Style="{StaticResource SecondaryButtonStyle}"
-                        Click="FindPrevious_Click"
-                        Margin="0,0,5,0"/>
-                
-                <Button Grid.Column="3" 
-                        Content="다음" 
-                        Style="{StaticResource SecondaryButtonStyle}"
-                        Click="FindNext_Click"
-                        Margin="0,0,10,0"/>
-                
-                <Button Grid.Column="4" 
-                        Content="✕" 
-                        Style="{StaticResource SecondaryButtonStyle}"
-                        Click="CloseSearch_Click"/>
-            </Grid>
-        </Border>
-    </Grid>
+                        Margin="0,0,10,0"
+                        Click="TestLog_Click"/>
+                <Button Content="콘솔 숨기기" 
+                        Style="{StaticResource PrimaryButtonStyle}"
+                        Click="HideConsole_Click"/>
+            </StackPanel>
+        </components:OverlayPanel.ButtonContent>
+    </components:OverlayPanel>
+    
 </UserControl> 

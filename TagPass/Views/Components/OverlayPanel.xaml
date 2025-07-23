@@ -59,11 +59,11 @@
                 </Border>
                 
                 <!-- 콘텐츠 영역 -->
-                <ContentPresenter Grid.Row="1" 
-                                  x:Name="ContentArea"
-                                  Content="{Binding PanelContent, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                  Margin="0"/>
-                
+                <ContentControl Grid.Row="1" 
+                                x:Name="ContentArea"
+                                Content="{Binding PanelContent, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                Margin="0" />
+
                 <!-- 하단 버튼 영역 -->
                 <Border Grid.Row="2" 
                         x:Name="ButtonArea"

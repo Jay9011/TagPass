@@ -1,15 +1,67 @@
 ﻿using FileIOHelper;
+using System.ComponentModel;
 
 namespace TagPass.Models
 {
     /// <summary>
     /// 애플리케이션 전체 설정을 담는 통합 모델
     /// </summary>
-    public class ApplicationSettings
+    public class ApplicationSettings : INotifyPropertyChanged
     {
-        public BrokerSettings Broker { get; set; }
-        public DisplaySettings Display { get; set; }
-        public GeneralSettings General { get; set; }
+        private BrokerSettings _broker;
+        private DisplaySettings _display;
+        private GeneralSettings _general;
+
+        public BrokerSettings Broker
+        {
+            get => _broker;
+            set
+            {
+                if (_broker != null)
+                    _broker.PropertyChanged -= OnSubObjectPropertyChanged;
+
+                _broker = value;
+
+                if (_broker != null)
+                    _broker.PropertyChanged += OnSubObjectPropertyChanged;
+
+                OnPropertyChanged(nameof(Broker));
+            }
+        }
+
+        public DisplaySettings Display
+        {
+            get => _display;
+            set
+            {
+                if (_display != null)
+                    _display.PropertyChanged -= OnSubObjectPropertyChanged;
+
+                _display = value;
+
+                if (_display != null)
+                    _display.PropertyChanged += OnSubObjectPropertyChanged;
+
+                OnPropertyChanged(nameof(Display));
+            }
+        }
+
+        public GeneralSettings General
+        {
+            get => _general;
+            set
+            {
+                if (_general != null)
+                    _general.PropertyChanged -= OnSubObjectPropertyChanged;
+
+                _general = value;
+
+                if (_general != null)
+                    _general.PropertyChanged += OnSubObjectPropertyChanged;
+
+                OnPropertyChanged(nameof(General));
+            }
+        }
 
         public ApplicationSettings()
         {
@@ -23,6 +75,15 @@ namespace TagPass.Models
             Broker = broker ?? new BrokerSettings();
             Display = display ?? new DisplaySettings();
             General = general ?? new GeneralSettings();
+        }
+
+        /// <summary>
+        /// 서브 객체의 PropertyChanged 이벤트 핸들러
+        /// </summary>
+        private void OnSubObjectPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            // 서브 객체의 속성 변경을 상위로 전파
+            OnPropertyChanged($"{sender.GetType().Name}.{e.PropertyName}");
         }
 
         /// <summary>
@@ -74,5 +135,16 @@ namespace TagPass.Models
             Display.SaveToIni(iniHelper);
             General.SaveToIni(iniHelper);
         }
+
+        #region INotifyPropertyChanged 구현
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected virtual void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        #endregion
     }
 }

@@ -207,63 +207,14 @@
             </StackPanel>
         </ScrollViewer>
 
-        <!-- 오버레이 - 설정 -->
-        <components:OverlayPanel x:Name="SettingsOverlay" 
-                                 Title="설정"
-                                 Visibility="Collapsed"
-                                 ShowButtons="True"
-                                 UseAutoSizing="True"
-                                 AutoWidthRatio="0.6"
-                                 AutoHeightRatio="0.8"
-                                 CloseRequested="SettingsOverlay_CloseRequested">
+        <!-- 설정 뷰 -->
+        <views:SettingsView x:Name="SettingsView" 
+                            Visibility="Collapsed"
+                            SettingsClosed="SettingsView_SettingsClosed"/>
 
-            <!-- 설정 콘텐츠 -->
-            <components:OverlayPanel.PanelContent>
-                <views:SettingsView ApplySettings="SettingsContent_ApplySettings"
-                                    ResetToDefaults="SettingsContent_ResetToDefaults"/>
-            </components:OverlayPanel.PanelContent>
-
-            <!-- 오버레이 버튼 영역 -->
-            <components:OverlayPanel.ButtonContent>
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                    <Button Content="기본값 복원" 
-                            Style="{StaticResource SecondaryButtonStyle}"
-                            Margin="0,0,10,0"
-                            Click="ResetDefaults_Click"/>
-                    <Button Content="적용" 
-                            Style="{StaticResource PrimaryButtonStyle}"
-                            Click="ApplySettings_Click"/>
-                </StackPanel>
-            </components:OverlayPanel.ButtonContent>
-        </components:OverlayPanel>
-
-        <!-- 오버레이 - 디버그 콘솔 -->
-        <components:OverlayPanel x:Name="ConsoleOverlay" 
-                                 Title="콘솔"
-                                 Visibility="Collapsed"
-                                 ShowButtons="True"
-                                 UseAutoSizing="True"
-                                 AutoWidthRatio="0.85"
-                                 AutoHeightRatio="0.9"
-                                 CloseRequested="ConsoleOverlay_CloseRequested">
-
-            <!-- 콘솔 콘텐츠 -->
-            <components:OverlayPanel.PanelContent>
-                <views:ConsoleView/>
-            </components:OverlayPanel.PanelContent>
-
-            <!-- 오버레이 버튼 영역 -->
-            <components:OverlayPanel.ButtonContent>
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                    <Button Content="테스트 로그" 
-                            Style="{StaticResource SecondaryButtonStyle}"
-                            Margin="0,0,10,0"
-                            Click="TestLog_Click"/>
-                    <Button Content="콘솔 숨기기" 
-                            Style="{StaticResource PrimaryButtonStyle}"
-                            Click="HideConsole_Click"/>
-                </StackPanel>
-            </components:OverlayPanel.ButtonContent>
-        </components:OverlayPanel>
+        <!-- 콘솔 뷰 -->
+        <views:ConsoleView x:Name="ConsoleView" 
+                           Visibility="Collapsed"
+                           ConsoleClosed="ConsoleView_ConsoleClosed"/>
     </Grid>
 </Window>

@@ -1,14 +1,48 @@
 ﻿using System.Net;
 using FileIOHelper;
 using TagPass.Common;
+using System.ComponentModel;
 
 namespace TagPass.Models
 {
-    public class BrokerSettings
+    /// <summary>
+    /// 브로커 데이터 모델
+    /// </summary>
+    public class BrokerSettings : INotifyPropertyChanged
     {
-        public string IP { get; set; } = string.Empty;
-        public string Port { get; set; } = string.Empty;
-        public string Topic { get; set; } = string.Empty;
+        private string _ip = string.Empty;
+        private string _port = string.Empty;
+        private string _topic = string.Empty;
+
+        public string IP
+        {
+            get => _ip;
+            set
+            {
+                _ip = value;
+                OnPropertyChanged(nameof(IP));
+            }
+        }
+
+        public string Port
+        {
+            get => _port;
+            set
+            {
+                _port = value;
+                OnPropertyChanged(nameof(Port));
+            }
+        }
+
+        public string Topic
+        {
+            get => _topic;
+            set
+            {
+                _topic = value;
+                OnPropertyChanged(nameof(Topic));
+            }
+        }
 
         public BrokerSettings()
         {
@@ -24,6 +58,11 @@ namespace TagPass.Models
             Topic = topic;
         }
 
+        /// <summary>
+        /// 브로커 설정 유효성 검사
+        /// </summary>
+        /// <param name="errorMessage">검사 실패시 오류 문자열</param>
+        /// <returns></returns>
         public bool IsValid(out string errorMessage)
         {
             errorMessage = string.Empty;
@@ -89,5 +128,16 @@ namespace TagPass.Models
             iniHelper.WriteValue(StringClass.Broker, StringClass.Port, Port);
             iniHelper.WriteValue(StringClass.Broker, StringClass.Topic, Topic);
         }
+
+        #region INotifyPropertyChanged
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        protected virtual void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        #endregion
     }
 }
