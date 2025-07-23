@@ -1,8 +1,8 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
 using System;
 using System.Windows.Media;
+using System.Windows.Documents;
 using TagPass.Common;
 using TagPass.Services;
 using TagPass.Models;
@@ -13,6 +13,7 @@ namespace TagPass.Views
     public partial class ConsoleView : UserControl
     {
         private ConsoleModel _consoleModel;
+
         public ConsoleModel ConsoleModel
         {
             get => _consoleModel;
@@ -22,7 +23,6 @@ namespace TagPass.Views
                 if (_consoleModel != null)
                 {
                     _consoleModel.PropertyChanged -= OnConsoleModelPropertyChanged;
-                    _consoleModel.SearchPositionChanged -= OnSearchPositionChanged;
                 }
 
                 _consoleModel = value;
@@ -32,7 +32,6 @@ namespace TagPass.Views
                 if (_consoleModel != null)
                 {
                     _consoleModel.PropertyChanged += OnConsoleModelPropertyChanged;
-                    _consoleModel.SearchPositionChanged += OnSearchPositionChanged;
                 }
             }
         }
@@ -55,6 +54,7 @@ namespace TagPass.Views
         {
             InitializeComponent();
             ConsoleModel = new ConsoleModel();
+            this.LayoutUpdated += OnConsoleViewLoaded; // 콘솔 로드 이벤트
         }
 
         /// <summary>
@@ -64,7 +64,6 @@ namespace TagPass.Views
         {
             this.Visibility = Visibility.Visible;
             this.Focus();
-            ConsoleModel.LogInfo("콘솔이 열렸습니다.");
         }
 
         /// <summary>
@@ -82,52 +81,69 @@ namespace TagPass.Views
         public void AppendTimestamp(string text) => ConsoleModel.AppendLine(text);
         public void AppendLine(string text) => ConsoleModel.AppendLine(text, false);
 
-        #region TextBox 찾기 관련 메서드들
-
-        private TextBox? GetConsoleTextBox()
+        /// <summary>
+        /// RichTextBox 콘텐츠 업데이트
+        /// </summary>
+        private void UpdateConsoleContent(string text)
         {
-            return FindTextBox(tb => tb.IsReadOnly);
+            var richTextBox = GetConsoleRichTextBox();
+            if (richTextBox == null) return;
+
+            var document = richTextBox.Document;
+            document.Blocks.Clear();
+
+            var paragraph = new Paragraph();
+            paragraph.Inlines.Add(new Run(text));
+            document.Blocks.Add(paragraph);
         }
 
-        private TextBox? GetSearchTextBox()
+        /// <summary>
+        /// 콘솔 모델 속성 변경 이벤트
+        /// </summary>
+        private void OnConsoleModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            return FindTextBox(tb => !tb.IsReadOnly);
-        }
-
-        private TextBox? FindTextBox(Func<TextBox, bool> predicate)
-        {
-            return FindVisualChild<TextBox>(this, predicate);
-        }
-
-        private static T? FindVisualChild<T>(DependencyObject parent, Func<T, bool>? predicate = null) where T : class
-        {
-            if (parent == null) return null;
-
-            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
+            // 콘솔 텍스트 변경 시 RichTextBox 업데이트
+            if (e.PropertyName == nameof(ConsoleModel.ConsoleText))
             {
-                var child = VisualTreeHelper.GetChild(parent, i);
-
-                if (child is T element && (predicate == null || predicate(element)))
+                Dispatcher.BeginInvoke(() =>
                 {
-                    return element;
-                }
+                    // Visual Tree가 아직 준비되지 않았으면 무시 (Loaded 이벤트에서 처리됨)
+                    if (!this.IsLoaded)
+                        return;
 
-                var result = FindVisualChild<T>(child, predicate);
-                if (result != null)
-                    return result;
+                    UpdateConsoleContent(ConsoleModel.ConsoleText);
+
+                    // 자동 스크롤 처리
+                    if (ConsoleModel.AutoScrollEnabled)
+                    {
+                        var richTextBox = GetConsoleRichTextBox();
+                        richTextBox?.ScrollToEnd();
+                    }
+                });
             }
-
-            return null;
         }
 
-        #endregion
+        /// <summary>
+        /// ConsoleView가 로드되었을 때 초기 콘솔 텍스트를 업데이트
+        /// </summary>
+        private void OnConsoleViewLoaded(object? sender, EventArgs e)
+        {
+            var richTextBox = GetConsoleRichTextBox();
+            if (richTextBox == null) return;
+
+            this.LayoutUpdated -= OnConsoleViewLoaded; // 한 번만 실행되도록 이벤트 해제
+
+            if (ConsoleModel != null)
+            {
+                UpdateConsoleContent(ConsoleModel.ConsoleText);
+            }
+        }
 
         /// <summary>
         /// 콘솔 오버레이 닫기 요청 이벤트
         /// </summary>
         private void ConsoleOverlayPanel_CloseRequested(object sender, RoutedEventArgs e)
         {
-            ConsoleModel.LogInfo("콘솔을 닫습니다.");
             RaiseEvent(new RoutedEventArgs(ConsoleClosedEvent, this));
         }
 
@@ -136,7 +152,6 @@ namespace TagPass.Views
         /// </summary>
         private void HideConsole_Click(object sender, RoutedEventArgs e)
         {
-            ConsoleModel.LogInfo("콘솔을 숨깁니다.");
             RaiseEvent(new RoutedEventArgs(ConsoleClosedEvent, this));
         }
 
@@ -149,7 +164,7 @@ namespace TagPass.Views
             ConsoleModel.LogWarning("이것은 경고 메시지입니다.");
             ConsoleModel.LogError("이것은 오류 메시지입니다.");
             ConsoleModel.LogDebug("이것은 디버그 메시지입니다.");
-            ConsoleModel.AppendLine("일반 메시지도 추가할 수 있습니다.");
+            ConsoleModel.AppendLine("일반 메시지도 추가할 수 있습니다.", false);
 
             // MQTT 연결 상태 확인 및 테스트 메시지 전송
             TestMqttConnection();
@@ -173,12 +188,13 @@ namespace TagPass.Views
         /// </summary>
         private void CopyConsole_Click(object sender, RoutedEventArgs e)
         {
-            var consoleTextBox = GetConsoleTextBox();
-            if (consoleTextBox == null) return;
+            var richTextBox = GetConsoleRichTextBox();
+            if (richTextBox == null) return;
 
-            if (!string.IsNullOrEmpty(consoleTextBox.SelectedText))
+            var selectedText = richTextBox.Selection.Text;
+            if (!string.IsNullOrEmpty(selectedText))
             {
-                Clipboard.SetText(consoleTextBox.SelectedText);
+                Clipboard.SetText(selectedText);
                 MessageBox.Show("선택된 텍스트가 클립보드에 복사되었습니다.", "복사 완료", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             else
@@ -186,120 +202,6 @@ namespace TagPass.Views
                 Clipboard.SetText(ConsoleModel.ConsoleText);
                 MessageBox.Show("전체 콘솔 내용이 클립보드에 복사되었습니다.", "복사 완료", MessageBoxButton.OK, MessageBoxImage.Information);
             }
-        }
-
-        /// <summary>
-        /// 검색 토글
-        /// </summary>
-        private void SearchConsole_Click(object sender, RoutedEventArgs e)
-        {
-            ConsoleModel.SearchBarVisible = !ConsoleModel.SearchBarVisible;
-        }
-
-        /// <summary>
-        /// 검색 바 닫기
-        /// </summary>
-        private void CloseSearch_Click(object sender, RoutedEventArgs e)
-        {
-            ConsoleModel.SearchBarVisible = false;
-            ConsoleModel.ClearSearchResults();
-        }
-
-        /// <summary>
-        /// 검색 텍스트박스 키 이벤트
-        /// </summary>
-        private void SearchTextBox_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.Key == Key.Enter)
-            {
-                if (!string.IsNullOrWhiteSpace(ConsoleModel.SearchText))
-                {
-                    ConsoleModel.MoveToNext();
-                }
-            }
-            else if (e.Key == Key.Escape)
-            {
-                ConsoleModel.SearchBarVisible = false;
-                ConsoleModel.ClearSearchResults();
-            }
-        }
-
-        /// <summary>
-        /// 다음 검색 결과
-        /// </summary>
-        private void FindNext_Click(object sender, RoutedEventArgs e)
-        {
-            ConsoleModel.MoveToNext();
-        }
-
-        /// <summary>
-        /// 이전 검색 결과
-        /// </summary>
-        private void FindPrevious_Click(object sender, RoutedEventArgs e)
-        {
-            ConsoleModel.MoveToPrevious();
-        }
-
-        /// <summary>
-        /// 현재 검색 결과 하이라이트
-        /// </summary>
-        private void HighlightCurrentSearchResult()
-        {
-            var consoleTextBox = GetConsoleTextBox();
-            if (consoleTextBox == null || !ConsoleModel.HasSearchResults) return;
-
-            int position = ConsoleModel.CurrentSearchPosition;
-            if (position >= 0)
-            {
-                int length = ConsoleModel.SearchText.Length;
-                consoleTextBox.Select(position, length);
-                consoleTextBox.ScrollToLine(consoleTextBox.GetLineIndexFromCharacterIndex(position));
-            }
-            else
-            {
-                consoleTextBox.Select(0, 0);
-            }
-        }
-
-        /// <summary>
-        /// 콘솔 모델 속성 변경 이벤트
-        /// </summary>
-        private void OnConsoleModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
-        {
-            // 자동 스크롤 처리 (내용 추가 시 자동 스크롤이 활성화 되어있는 경우)
-            if (e.PropertyName == nameof(ConsoleModel.ConsoleText) && _consoleModel.AutoScrollEnabled)
-            {
-                Dispatcher.BeginInvoke(() =>
-                {
-                    var textBox = GetConsoleTextBox();
-                    textBox?.ScrollToEnd();
-                });
-            }
-            // 검색바 표시/숨김 시 포커스 처리
-            else if (e.PropertyName == nameof(ConsoleModel.SearchBarVisible))
-            {
-                Dispatcher.BeginInvoke(() =>
-                {
-                    if (_consoleModel.SearchBarVisible)
-                    {
-                        var searchBox = GetSearchTextBox();
-                        searchBox?.Focus();
-                    }
-                    else
-                    {
-                        var consoleBox = GetConsoleTextBox();
-                        consoleBox?.Focus();
-                    }
-                });
-            }
-        }
-
-        /// <summary>
-        /// 검색 위치 변경 이벤트
-        /// </summary>
-        private void OnSearchPositionChanged(object? sender, EventArgs e)
-        {
-            Dispatcher.BeginInvoke(() => HighlightCurrentSearchResult());
         }
 
         /// <summary>
@@ -340,5 +242,35 @@ namespace TagPass.Views
                 ConsoleModel.LogError($"MQTT 테스트 중 오류: {ex.Message}");
             }
         }
+
+        #region 요소 검색 관련
+
+        private RichTextBox? GetConsoleRichTextBox()
+        {
+            return FindVisualChild<RichTextBox>(this);
+        }
+
+        private static T? FindVisualChild<T>(DependencyObject parent, Func<T, bool>? predicate = null) where T : class
+        {
+            if (parent == null) return null;
+
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
+            {
+                var child = VisualTreeHelper.GetChild(parent, i);
+
+                if (child is T element && (predicate == null || predicate(element)))
+                {
+                    return element;
+                }
+
+                var result = FindVisualChild<T>(child, predicate);
+                if (result != null)
+                    return result;
+            }
+
+            return null;
+        }
+
+        #endregion
     }
 }

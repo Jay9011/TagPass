@@ -21,7 +21,6 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
-                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
                 
                 <!-- 상단 도구모음 -->
@@ -38,11 +37,7 @@
                                     Margin="0,0,10,0"/>
                             <Button Content="복사" 
                                     Style="{StaticResource SecondaryButtonStyle}"
-                                    Click="CopyConsole_Click"
-                                    Margin="0,0,10,0"/>
-                            <Button Content="검색" 
-                                    Style="{StaticResource SecondaryButtonStyle}"
-                                    Click="SearchConsole_Click"/>
+                                    Click="CopyConsole_Click"/>
                         </StackPanel>
                         
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
@@ -67,66 +62,18 @@
                         BorderBrush="{StaticResource BorderColor}"
                         BorderThickness="1"
                         Margin="15,10,15,0">
-                    <TextBox Text="{Binding ConsoleText}"
-                             IsReadOnly="True"
-                             Background="White"
-                             Foreground="Black"
-                             FontFamily="Consolas, Courier New, monospace"
-                             FontSize="14"
-                             VerticalScrollBarVisibility="Auto"
-                             HorizontalScrollBarVisibility="Auto"
-                             TextWrapping="NoWrap"
-                             BorderThickness="0"
-                             Padding="10"
-                             VerticalAlignment="Stretch"
-                             HorizontalAlignment="Stretch"/>
-                </Border>
-                
-                <!-- 검색 바 (기본적으로 숨김) -->
-                <Border Grid.Row="2" 
-                        Background="{StaticResource SurfaceColor}"
-                        BorderBrush="{StaticResource BorderColor}"
-                        BorderThickness="0,1,0,0"
-                        Padding="15,10"
-                        Visibility="{Binding SearchBarVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        
-                        <TextBlock Grid.Column="0" 
-                                   Text="검색:" 
-                                   Style="{StaticResource LabelTextStyle}"
-                                   VerticalAlignment="Center"
-                                   Margin="0,0,10,0"/>
-                        
-                        <TextBox Grid.Column="1" 
-                                 Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{StaticResource ModernTextBoxStyle}"
-                                 KeyDown="SearchTextBox_KeyDown"
-                                 Margin="0,0,10,0"/>
-                        
-                        <Button Grid.Column="2" 
-                                Content="이전" 
-                                Style="{StaticResource SecondaryButtonStyle}"
-                                Click="FindPrevious_Click"
-                                Margin="0,0,5,0"/>
-                        
-                        <Button Grid.Column="3" 
-                                Content="다음" 
-                                Style="{StaticResource SecondaryButtonStyle}"
-                                Click="FindNext_Click"
-                                Margin="0,0,10,0"/>
-                        
-                        <Button Grid.Column="4" 
-                                Content="✕" 
-                                Style="{StaticResource SecondaryButtonStyle}"
-                                Click="CloseSearch_Click"/>
-                    </Grid>
+                    <RichTextBox IsReadOnly="True"
+                                 Background="White"
+                                 Foreground="Black"
+                                 FontFamily="Consolas, Courier New, monospace"
+                                 FontSize="14"
+                                 VerticalScrollBarVisibility="Auto"
+                                 HorizontalScrollBarVisibility="Auto"
+                                 BorderThickness="0"
+                                 Padding="10"
+                                 VerticalAlignment="Stretch"
+                                 HorizontalAlignment="Stretch">
+                    </RichTextBox>
                 </Border>
             </Grid>
         </components:OverlayPanel.PanelContent>
