@@ -1,13 +1,8 @@
-﻿using System.Text;
+﻿using SingletonManager;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+using TagPass.Common;
+using TagPass.Services;
 using TagPass.Views;
 
 namespace TagPass
@@ -20,21 +15,18 @@ namespace TagPass
         {
             InitializeComponent();
 
-            // 전체화면으로 시작
-            WindowState = WindowState.Maximized;
-            WindowStyle = WindowStyle.None; // 타이틀바 제거 (선택사항)
+            WindowState = WindowState.Maximized;    // 전체화면
+            WindowStyle = WindowStyle.None;         // 타이틀바 제거
 
             // 키보드 이벤트 핸들러 등록
             KeyDown += MainWindow_KeyDown;
-
-            // 포커스를 설정하여 키보드 이벤트를 받을 수 있도록 함
             Focusable = true;
 
-            // ConsoleView 인스턴스 생성
+            // View 인스턴스
             consoleView = new ConsoleView();
         }
 
-        private ConsoleView GetConsoleView()
+        public ConsoleView GetConsoleView()
         {
             // ConsoleOverlay에서 ConsoleView를 찾아서 반환
             if (ConsoleOverlay.PanelContent is ConsoleView console)
@@ -57,7 +49,6 @@ namespace TagPass
         /// </summary>
         private SettingsView? GetSettingsView()
         {
-            // SettingsOverlay에서 SettingsView를 찾아서 반환
             if (SettingsOverlay.PanelContent is SettingsView settingsView)
             {
                 return settingsView;
@@ -69,12 +60,16 @@ namespace TagPass
         {
             switch (e.Key)
             {
-                case Key.F12:
-                    ShowSettingsOverlay();
+                case Key.F5:
+                    ShowConsoleOverlay();   // 콘솔 오버레이
                     e.Handled = true;
                     break;
-                case Key.F5:
-                    ShowConsoleOverlay();
+                case Key.F11:
+                    ToggleFullscreen();
+                    e.Handled = true;
+                    break;
+                case Key.F12:
+                    ShowSettingsOverlay();  // 세팅 오버레이
                     e.Handled = true;
                     break;
                 case Key.Escape:
@@ -83,13 +78,10 @@ namespace TagPass
                     HideConsoleOverlay();
                     e.Handled = true;
                     break;
-                case Key.F11:
-                    // F11로 전체화면 토글
-                    ToggleFullscreen();
-                    e.Handled = true;
-                    break;
             }
         }
+
+        #region 설정 오버레이
 
         private void ShowSettingsOverlay()
         {
@@ -103,57 +95,12 @@ namespace TagPass
             this.Focus();
         }
 
-        private void ShowConsoleOverlay()
-        {
-            // ConsoleView 인스턴스 설정
-            if (ConsoleOverlay.PanelContent == null && consoleView != null)
-            {
-                ConsoleOverlay.PanelContent = consoleView;
-            }
-
-            ConsoleOverlay.Visibility = Visibility.Visible;
-            ConsoleOverlay.Focus();
-
-            // 콘솔 열릴 때 환영 메시지 추가
-            GetConsoleView().LogInfo("콘솔이 열렸습니다.");
-        }
-
-        private void HideConsoleOverlay()
-        {
-            ConsoleOverlay.Visibility = Visibility.Collapsed;
-            this.Focus();
-        }
-
-        private void ToggleFullscreen()
-        {
-            if (WindowState == WindowState.Maximized && WindowStyle == WindowStyle.None)
-            {
-                WindowState = WindowState.Normal;
-                WindowStyle = WindowStyle.SingleBorderWindow;
-                GetConsoleView().LogInfo("창 모드로 전환되었습니다.");
-            }
-            else
-            {
-                WindowState = WindowState.Maximized;
-                WindowStyle = WindowStyle.None;
-                GetConsoleView().LogInfo("전체화면 모드로 전환되었습니다.");
-            }
-        }
-
-        // 설정 오버레이 관련 이벤트들
         private void SettingsOverlay_CloseRequested(object sender, RoutedEventArgs e)
         {
             HideSettingsOverlay();
             GetConsoleView().LogInfo("설정 창이 닫혔습니다.");
         }
 
-        private void ConsoleOverlay_CloseRequested(object sender, RoutedEventArgs e)
-        {
-            GetConsoleView().LogInfo("콘솔을 닫습니다.");
-            HideConsoleOverlay();
-        }
-
-        // 설정 적용 버튼 클릭 - SettingsView의 실제 메서드 호출
         private void ApplySettings_Click(object sender, RoutedEventArgs e)
         {
             var settingsView = GetSettingsView();
@@ -168,11 +115,9 @@ namespace TagPass
             }
         }
 
-        // 기본값 복원 버튼 클릭 - SettingsView의 실제 메서드 호출
         private void ResetDefaults_Click(object sender, RoutedEventArgs e)
         {
-            var result = MessageBox.Show("설정을 기본값으로 복원하시겠습니까?", "기본값 복원",
-                MessageBoxButton.YesNo, MessageBoxImage.Question);
+            var result = MessageBox.Show("설정을 기본값으로 복원하시겠습니까?", "기본값 복원", MessageBoxButton.YesNo, MessageBoxImage.Question);
 
             if (result == MessageBoxResult.Yes)
             {
@@ -189,7 +134,51 @@ namespace TagPass
             }
         }
 
-        // 테스트 로그 버튼 클릭
+        private void SettingsContent_ApplySettings(object sender, RoutedEventArgs e)
+        {
+            GetConsoleView().LogInfo("설정이 성공적으로 적용되었습니다.");
+            HideSettingsOverlay(); // 설정 적용 후 오버레이 닫기
+        }
+
+        private void SettingsContent_ResetToDefaults(object sender, RoutedEventArgs e)
+        {
+            GetConsoleView().LogInfo("설정이 기본값으로 복원되었습니다.");
+        }
+
+        #endregion
+
+        #region 콘솔 오버레이 표시
+
+        private void ShowConsoleOverlay()
+        {
+            if (ConsoleOverlay.PanelContent == null && consoleView != null)
+            {
+                ConsoleOverlay.PanelContent = consoleView;
+            }
+
+            ConsoleOverlay.Visibility = Visibility.Visible;
+            ConsoleOverlay.Focus();
+
+            GetConsoleView().LogInfo("콘솔이 열렸습니다.");
+        }
+
+        private void HideConsoleOverlay()
+        {
+            ConsoleOverlay.Visibility = Visibility.Collapsed;
+            this.Focus();
+        }
+
+        private void HideConsole_Click(object sender, RoutedEventArgs e)
+        {
+            GetConsoleView().LogInfo("콘솔을 숨깁니다.");
+            HideConsoleOverlay();
+        }
+
+        /// <summary>
+        /// 테스트 로그
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void TestLog_Click(object sender, RoutedEventArgs e)
         {
             // 다양한 타입의 로그 메시지 테스트
@@ -199,26 +188,78 @@ namespace TagPass
             console.LogError("이것은 오류 메시지입니다.");
             console.LogDebug("이것은 디버그 메시지입니다.");
             console.AppendLine("일반 메시지도 추가할 수 있습니다.");
+
+            // MQTT 연결 상태 확인 및 테스트 메시지 전송
+            TestMqttConnection();
         }
 
-        // 콘솔 숨기기 버튼 클릭
-        private void HideConsole_Click(object sender, RoutedEventArgs e)
+        private void ConsoleOverlay_CloseRequested(object sender, RoutedEventArgs e)
         {
-            GetConsoleView().LogInfo("콘솔을 숨깁니다.");
+            GetConsoleView().LogInfo("콘솔을 닫습니다.");
             HideConsoleOverlay();
         }
 
-        // SettingsView에서 발생한 설정 적용 이벤트 (이벤트 기반 처리)
-        private void SettingsContent_ApplySettings(object sender, RoutedEventArgs e)
+        #endregion
+
+        /// <summary>
+        /// 풀스크린 토글
+        /// </summary>
+        private void ToggleFullscreen()
         {
-            GetConsoleView().LogInfo("설정이 성공적으로 적용되었습니다.");
-            HideSettingsOverlay(); // 설정 적용 후 오버레이 닫기
+            if (WindowState == WindowState.Maximized && WindowStyle == WindowStyle.None)
+            {
+                WindowState = WindowState.Normal;
+                WindowStyle = WindowStyle.SingleBorderWindow;
+                GetConsoleView().LogInfo("창 모드로 전환되었습니다.");
+            }
+            else
+            {
+                WindowState = WindowState.Maximized;
+                WindowStyle = WindowStyle.None;
+                GetConsoleView().LogInfo("전체화면 모드로 전환되었습니다.");
+            }
         }
 
-        // SettingsView에서 발생한 기본값 복원 이벤트 (이벤트 기반 처리)
-        private void SettingsContent_ResetToDefaults(object sender, RoutedEventArgs e)
+        /// <summary>
+        /// MQTT 연결 상태 확인 및 테스트
+        /// </summary>
+        private async void TestMqttConnection()
         {
-            GetConsoleView().LogInfo("설정이 기본값으로 복원되었습니다.");
+            try
+            {
+                var console = GetConsoleView();
+
+                if (Singletons.Instance.TryGetKeyedSingleton<IMqttService>(Keys.MqttService, out var mqttService))
+                {
+                    console.LogInfo($"MQTT 연결 상태: {(mqttService.IsConnected ? "연결됨" : "연결 안됨")}");
+
+                    if (mqttService.CurrentSettings != null)
+                    {
+                        console.LogInfo($"MQTT 브로커: {mqttService.CurrentSettings.IP}:{mqttService.CurrentSettings.Port}");
+                        console.LogInfo($"MQTT 토픽: {mqttService.CurrentSettings.Topic}");
+                    }
+
+                    if (mqttService.IsConnected && mqttService.CurrentSettings != null)
+                    {
+                        var testMessage = $"TagPass 테스트 메시지 - {DateTime.Now:yyyy-MM-dd HH:mm:ss}";
+                        await mqttService.PublishAsync(mqttService.CurrentSettings.Topic, testMessage);
+                        console.LogInfo($"테스트 메시지 전송: {testMessage}");
+                    }
+                    else
+                    {
+                        console.LogWarning("MQTT 브로커에 연결되지 않았습니다.");
+                    }
+                }
+                else
+                {
+                    console.LogError("MQTT 서비스를 찾을 수 없습니다.");
+                }
+            }
+            catch (Exception ex)
+            {
+                GetConsoleView().LogError($"MQTT 테스트 중 오류: {ex.Message}");
+            }
         }
+
     }
 }

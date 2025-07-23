@@ -81,6 +81,10 @@ namespace TagPass.Views
             {
                 var settings = GetCurrentUISettings();
                 await _settingsService.SaveSettingsAsync(settings);
+
+                // MQTT 서비스에 새로운 설정 적용
+                await UpdateMqttConnection(settings);
+
                 RaiseEvent(new RoutedEventArgs(ApplySettingsEvent, this));
 
                 MessageBox.Show("설정이 저장되었습니다.", "설정 저장", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -88,6 +92,33 @@ namespace TagPass.Views
             catch (Exception ex)
             {
                 MessageBox.Show($"설정 저장 중 오류가 발생했습니다: {ex.Message}", "오류", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        /// <summary>
+        /// MQTT 서비스 연결 업데이트
+        /// </summary>
+        private async Task UpdateMqttConnection(ApplicationSettings settings)
+        {
+            try
+            {
+                // 싱글톤에서 MQTT 서비스 가져오기
+                if (Singletons.Instance.TryGetKeyedSingleton<IMqttService>(Keys.MqttService, out var mqttService))
+                {
+                    // 기존 연결이 있다면 해제
+                    if (mqttService.IsConnected)
+                    {
+                        await mqttService.DisconnectAsync();
+                    }
+
+                    // 새로운 설정으로 연결
+                    await mqttService.ConnectAsync(settings.Broker);
+                }
+            }
+            catch (Exception ex)
+            {
+                // MQTT 연결 오류는 로그만 출력하고 설정 저장은 계속 진행
+                System.Diagnostics.Debug.WriteLine($"MQTT 재연결 실패: {ex.Message}");
             }
         }
 
