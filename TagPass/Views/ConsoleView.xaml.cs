@@ -1,8 +1,6 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
 using System;
-using System.Windows.Media;
-using System.Windows.Documents;
 using TagPass.Common;
 using TagPass.Services;
 using TagPass.Models;
@@ -28,7 +26,7 @@ namespace TagPass.Views
                 _consoleModel = value;
                 DataContext = _consoleModel;
 
-                // 새 이벤트 설정
+                // 새 이벤트 설정 (필요에 따라)
                 if (_consoleModel != null)
                 {
                     _consoleModel.PropertyChanged += OnConsoleModelPropertyChanged;
@@ -53,8 +51,10 @@ namespace TagPass.Views
         public ConsoleView()
         {
             InitializeComponent();
-            ConsoleModel = new ConsoleModel();
-            this.LayoutUpdated += OnConsoleViewLoaded; // 콘솔 로드 이벤트
+            ConsoleModel = new ConsoleModel(1000);  // 기본 1000줄짜리 콘솔 객체 생성
+
+            // 리소스 정리를 위한 이벤트 구독
+            this.Unloaded += (sender, e) => ConsoleModel?.Dispose();
         }
 
         /// <summary>
@@ -74,69 +74,21 @@ namespace TagPass.Views
             this.Visibility = Visibility.Collapsed;
         }
 
+        // ConsoleModel의 로깅 메서드들을 직접 호출
         public void LogInfo(string message) => ConsoleModel.LogInfo(message);
         public void LogWarning(string message) => ConsoleModel.LogWarning(message);
-        public void LogError(string message) => ConsoleModel.LogError(message);
+        public void LogError(string message, Exception? exception = null) => ConsoleModel.LogError(message, exception);
         public void LogDebug(string message) => ConsoleModel.LogDebug(message);
         public void AppendTimestamp(string text) => ConsoleModel.AppendLine(text);
         public void AppendLine(string text) => ConsoleModel.AppendLine(text, false);
-
-        /// <summary>
-        /// RichTextBox 콘텐츠 업데이트
-        /// </summary>
-        private void UpdateConsoleContent(string text)
-        {
-            var richTextBox = GetConsoleRichTextBox();
-            if (richTextBox == null) return;
-
-            var document = richTextBox.Document;
-            document.Blocks.Clear();
-
-            var paragraph = new Paragraph();
-            paragraph.Inlines.Add(new Run(text));
-            document.Blocks.Add(paragraph);
-        }
 
         /// <summary>
         /// 콘솔 모델 속성 변경 이벤트
         /// </summary>
         private void OnConsoleModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            // 콘솔 텍스트 변경 시 RichTextBox 업데이트
-            if (e.PropertyName == nameof(ConsoleModel.ConsoleText))
-            {
-                Dispatcher.BeginInvoke(() =>
-                {
-                    // Visual Tree가 아직 준비되지 않았으면 무시 (Loaded 이벤트에서 처리됨)
-                    if (!this.IsLoaded)
-                        return;
-
-                    UpdateConsoleContent(ConsoleModel.ConsoleText);
-
-                    // 자동 스크롤 처리
-                    if (ConsoleModel.AutoScrollEnabled)
-                    {
-                        var richTextBox = GetConsoleRichTextBox();
-                        richTextBox?.ScrollToEnd();
-                    }
-                });
-            }
-        }
-
-        /// <summary>
-        /// ConsoleView가 로드되었을 때 초기 콘솔 텍스트를 업데이트
-        /// </summary>
-        private void OnConsoleViewLoaded(object? sender, EventArgs e)
-        {
-            var richTextBox = GetConsoleRichTextBox();
-            if (richTextBox == null) return;
-
-            this.LayoutUpdated -= OnConsoleViewLoaded; // 한 번만 실행되도록 이벤트 해제
-
-            if (ConsoleModel != null)
-            {
-                UpdateConsoleContent(ConsoleModel.ConsoleText);
-            }
+            // ScrollBehavior Attached Property가 자동 스크롤을 처리하므로 별도 처리 불필요
+            // 필요시 추가 로직 구현 가능
         }
 
         /// <summary>
@@ -188,20 +140,9 @@ namespace TagPass.Views
         /// </summary>
         private void CopyConsole_Click(object sender, RoutedEventArgs e)
         {
-            var richTextBox = GetConsoleRichTextBox();
-            if (richTextBox == null) return;
-
-            var selectedText = richTextBox.Selection.Text;
-            if (!string.IsNullOrEmpty(selectedText))
-            {
-                Clipboard.SetText(selectedText);
-                MessageBox.Show("선택된 텍스트가 클립보드에 복사되었습니다.", "복사 완료", MessageBoxButton.OK, MessageBoxImage.Information);
-            }
-            else
-            {
-                Clipboard.SetText(ConsoleModel.ConsoleText);
-                MessageBox.Show("전체 콘솔 내용이 클립보드에 복사되었습니다.", "복사 완료", MessageBoxButton.OK, MessageBoxImage.Information);
-            }
+            // 전체 콘솔 내용을 클립보드에 복사
+            Clipboard.SetText(ConsoleModel.GetDisplayText());
+            MessageBox.Show("콘솔 내용이 클립보드에 복사되었습니다.", "복사 완료", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         /// <summary>
@@ -239,38 +180,8 @@ namespace TagPass.Views
             }
             catch (Exception ex)
             {
-                ConsoleModel.LogError($"MQTT 테스트 중 오류: {ex.Message}");
+                ConsoleModel.LogError($"MQTT 테스트 중 오류: {ex.Message}", ex);
             }
         }
-
-        #region 요소 검색 관련
-
-        private RichTextBox? GetConsoleRichTextBox()
-        {
-            return FindVisualChild<RichTextBox>(this);
-        }
-
-        private static T? FindVisualChild<T>(DependencyObject parent, Func<T, bool>? predicate = null) where T : class
-        {
-            if (parent == null) return null;
-
-            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
-            {
-                var child = VisualTreeHelper.GetChild(parent, i);
-
-                if (child is T element && (predicate == null || predicate(element)))
-                {
-                    return element;
-                }
-
-                var result = FindVisualChild<T>(child, predicate);
-                if (result != null)
-                    return result;
-            }
-
-            return null;
-        }
-
-        #endregion
     }
 }

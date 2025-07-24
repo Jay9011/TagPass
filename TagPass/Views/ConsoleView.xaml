@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:components="clr-namespace:TagPass.Views.Components"
+             xmlns:property="clr-namespace:TagPass.Common.AttachedProperty"
              mc:Ignorable="d" 
              d:DesignHeight="720" d:DesignWidth="1024">
     
@@ -62,18 +63,22 @@
                         BorderBrush="{StaticResource BorderColor}"
                         BorderThickness="1"
                         Margin="15,10,15,0">
-                    <RichTextBox IsReadOnly="True"
-                                 Background="White"
-                                 Foreground="Black"
-                                 FontFamily="Consolas, Courier New, monospace"
-                                 FontSize="14"
-                                 VerticalScrollBarVisibility="Auto"
-                                 HorizontalScrollBarVisibility="Auto"
-                                 BorderThickness="0"
-                                 Padding="10"
-                                 VerticalAlignment="Stretch"
-                                 HorizontalAlignment="Stretch">
-                    </RichTextBox>
+                    <TextBox Text="{Binding ConsoleText, Mode=OneWay}"
+                             IsReadOnly="True"
+                             Background="White"
+                             Foreground="Black"
+                             FontFamily="Consolas, Courier New, monospace"
+                             FontSize="14"
+                             TextWrapping="NoWrap"
+                             AcceptsReturn="True"
+                             VerticalScrollBarVisibility="Auto"
+                             HorizontalScrollBarVisibility="Auto"
+                             BorderThickness="0"
+                             Padding="10"
+                             VerticalAlignment="Stretch"
+                             HorizontalAlignment="Stretch"
+                             property:ScrollBehavior.AutoScrollToEnd="{Binding AutoScrollEnabled}">
+                    </TextBox>
                 </Border>
             </Grid>
         </components:OverlayPanel.PanelContent>
