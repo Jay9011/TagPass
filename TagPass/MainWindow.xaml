@@ -11,201 +11,390 @@
         SnapsToDevicePixels="True"
         TextOptions.TextFormattingMode="Display"
         TextOptions.TextRenderingMode="ClearType"
-        Title="TagPass - 컬러 테마 데모" Height="720" Width="1024"
+        Title="TagPass - 출입 모니터링 시스템" Width="1920" Height="1080"
         Background="{StaticResource BackgroundColor}">
 
+    <!-- 애니메이션 리소스 -->
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <!-- 카드 애니메이션 리소스 참조 -->
+                <ResourceDictionary Source="Common/Animation/CardAnimations.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+
     <Grid>
-        <!-- 메인 콘텐츠 -->
-        <ScrollViewer VerticalScrollBarVisibility="Auto">
-            <StackPanel Margin="20">
+        <!-- 메인 레이아웃 -->
+        <Grid Margin="20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
 
-                <!-- 단축키 안내 섹션 추가 -->
-                <Border Style="{StaticResource CardStyle}">
-                    <StackPanel>
-                        <TextBlock Text="단축키 안내" 
-                                   Style="{StaticResource H2TextStyle}"/>
-                        <StackPanel Orientation="Horizontal" Margin="0,10">
-                            <TextBlock Text="F12: 설정" Style="{StaticResource BodyTextStyle}" Margin="0,0,20,0"/>
-                            <TextBlock Text="F11: 전체화면 토글" Style="{StaticResource BodyTextStyle}" Margin="0,0,20,0"/>
-                            <TextBlock Text="ESC: 설정 닫기" Style="{StaticResource BodyTextStyle}"/>
-                            <TextBlock Text="F5: 콘솔" Style="{StaticResource BodyTextStyle}" Margin="20,0,0,0"/>
-                        </StackPanel>
-                    </StackPanel>
-                </Border>
+            <!-- 상단 헤더 -->
+            <Border Grid.Row="0" Style="{StaticResource CardStyle}" Margin="0,0,0,15">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
 
-                <!-- 헤더 섹션 -->
-                <Border Style="{StaticResource CardStyle}">
-                    <StackPanel>
-                        <TextBlock Text="TagPass 애플리케이션" 
+                    <!-- 제목 영역 -->
+                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                        <TextBlock Text="출입 모니터링 시스템" 
                                    Style="{StaticResource H1}"/>
-                        <TextBlock Text="컬러 테마 시스템 데모" 
-                                   Style="{StaticResource BodyTextStyle}"/>
+                        <TextBlock Text="{Binding Source={x:Static sys:DateTime.Now}, StringFormat='현재 시간: {0:yyyy-MM-dd HH:mm:ss}'}" 
+                                   Style="{StaticResource BodyTextStyle}"
+                                   xmlns:sys="clr-namespace:System;assembly=mscorlib"/>
                     </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- 메인 콘텐츠 영역 -->
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="15"/>
+                    <ColumnDefinition Width="1.2*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- 사원 카드 -->
+                <Border Grid.Column="0" Style="{StaticResource CardStyle}"
+                        Padding="0">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="50"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- 카드 헤더 -->
+                        <Border Grid.Row="0" 
+                                Background="{StaticResource PrimaryColor}" 
+                                CornerRadius="8,8,0,0" 
+                                Padding="15,10">
+                            <TextBlock Text="사원 정보" 
+                                       Foreground="White" 
+                                       FontWeight="Bold" 
+                                       FontSize="16" 
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Center"/>
+                        </Border>
+
+                        <!-- 사원 카드 애니메이션 영역 -->
+                        <Canvas Grid.Row="1" ClipToBounds="True">
+                            <!-- 홀로그래픽 배경 -->
+                            <Canvas.Background>
+                                <ImageBrush ImageSource="/Resources/Image/holographic_background.jpg" 
+                                            Stretch="UniformToFill" 
+                                            Opacity="0.4"/>
+                            </Canvas.Background>
+                            
+                            <!-- 첫 번째 애니메이션 카드 -->
+                            <Border x:Name="EmployeeCard1"
+                                    Canvas.Left="-400"
+                                    Canvas.Top="0"
+                                    Width="{Binding RelativeSource={RelativeSource AncestorType=Canvas}, Path=ActualWidth}"
+                                    Height="{Binding RelativeSource={RelativeSource AncestorType=Canvas}, Path=ActualHeight}"
+                                    Opacity="0"
+                                    RenderTransformOrigin="0.5,0.5">
+                                <Border.RenderTransform>
+                                    <ScaleTransform ScaleX="0.8" ScaleY="0.8"/>
+                                </Border.RenderTransform>
+                                
+                                <!-- BasicCard 컨텐츠 -->
+                                <components:BasicCard x:Name="BasicCard1"
+                                                      HorizontalAlignment="Stretch" 
+                                                      VerticalAlignment="Stretch"
+                                                      Background="Transparent"/>
+                            </Border>
+                            
+                            <!-- 두 번째 애니메이션 카드 -->
+                            <Border x:Name="EmployeeCard2"
+                                    Canvas.Left="-400"
+                                    Canvas.Top="0"
+                                    Width="{Binding RelativeSource={RelativeSource AncestorType=Canvas}, Path=ActualWidth}"
+                                    Height="{Binding RelativeSource={RelativeSource AncestorType=Canvas}, Path=ActualHeight}"
+                                    Opacity="0"
+                                    RenderTransformOrigin="0.5,0.5">
+                                <Border.RenderTransform>
+                                    <ScaleTransform ScaleX="0.8" ScaleY="0.8"/>
+                                </Border.RenderTransform>
+                                
+                                <!-- BasicCard 컨텐츠 -->
+                                <components:BasicCard x:Name="BasicCard2"
+                                                      HorizontalAlignment="Stretch" 
+                                                      VerticalAlignment="Stretch"
+                                                      Background="Transparent"/>
+                            </Border>
+                        </Canvas>
+
+                        <!-- 추가 정보 -->
+                        <Border Grid.Row="2" 
+                                Background="{StaticResource DarkBackgroundColor}" 
+                                CornerRadius="8" 
+                                Padding="15" 
+                                Margin="0,15,0,0">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <TextBlock Grid.Row="0" 
+                                           Text="출입 정보" 
+                                           Style="{StaticResource H3}" 
+                                           Foreground="{StaticResource TextSecondaryColor}"
+                                           Margin="0,0,0,10"/>
+
+                                <Grid Grid.Row="1">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="위치" Style="{StaticResource BodyTextStyle}"/>
+                                        <TextBlock Text="{Binding SelectedEmployee.LocationName}" 
+                                                   Style="{StaticResource LabelTextStyle}" 
+                                                   FontWeight="Bold"/>
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="1">
+                                        <TextBlock Text="출입구" Style="{StaticResource BodyTextStyle}"/>
+                                        <TextBlock Text="{Binding SelectedEmployee.EqName}" 
+                                                   Style="{StaticResource LabelTextStyle}" 
+                                                   FontWeight="Bold"/>
+                                    </StackPanel>
+                                </Grid>
+
+                                <TextBlock Grid.Row="2" 
+                                           Text="{Binding SelectedEmployee.FormattedDate, StringFormat='출입 시간: {0}'}" 
+                                           Style="{StaticResource LabelTextStyle}" 
+                                           Margin="0,10,0,0"/>
+                            </Grid>
+                        </Border>
+                    </Grid>
                 </Border>
 
-                <!-- 버튼 섹션 -->
-                <Border Style="{StaticResource CardStyle}">
-                    <StackPanel>
-                        <TextBlock Text="버튼 컬러 예제" 
-                                   Style="{StaticResource H3}"/>
-                        <WrapPanel>
-                            <Button Content="Primary 버튼" Style="{StaticResource PrimaryButtonStyle}"/>
-                            <Button Content="Secondary 버튼" Style="{StaticResource SecondaryButtonStyle}"/>
-                            <Button Content="Accent 버튼" Style="{StaticResource AccentButtonStyle}"/>
-                        </WrapPanel>
-                    </StackPanel>
+                <!-- 가운데 분할선 -->
+                <Rectangle Grid.Column="1" 
+                           Fill="{StaticResource BorderColor}" 
+                           Width="1" 
+                           HorizontalAlignment="Center"/>
+
+                <!-- 출입 로그 목록 -->
+                <Border Grid.Column="2" Style="{StaticResource CardStyle}"
+                        Padding="0">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="50"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- 로그 목록 헤더 -->
+                        <Border Grid.Row="0" 
+                                Background="{StaticResource PrimaryColor}" 
+                                CornerRadius="8,8,0,0" 
+                                Padding="15,10">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="200"/>
+                                    <ColumnDefinition Width="150"/>
+                                    <ColumnDefinition Width="150"/>
+                                    <ColumnDefinition Width="150"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Grid.Column="0" 
+                                           Text="시간" 
+                                           Foreground="White" 
+                                           FontWeight="Bold" 
+                                           VerticalAlignment="Center"
+                                           HorizontalAlignment="Center"/>
+                                <TextBlock Grid.Column="1" 
+                                           Text="이름" 
+                                           Foreground="White" 
+                                           FontWeight="Bold" 
+                                           VerticalAlignment="Center"
+                                           HorizontalAlignment="Center"/>
+                                <TextBlock Grid.Column="2" 
+                                           Text="소속" 
+                                           Foreground="White" 
+                                           FontWeight="Bold" 
+                                           VerticalAlignment="Center"
+                                           HorizontalAlignment="Center"/>
+                                <TextBlock Grid.Column="3" 
+                                           Text="상태" 
+                                           Foreground="White" 
+                                           FontWeight="Bold" 
+                                           VerticalAlignment="Center"
+                                           HorizontalAlignment="Center"/>
+                                <TextBlock Grid.Column="4" 
+                                           Text="위치" 
+                                           Foreground="White" 
+                                           FontWeight="Bold" 
+                                           VerticalAlignment="Center"
+                                           HorizontalAlignment="Center"/>
+                            </Grid>
+                        </Border>
+
+                        <!-- 로그 목록 -->
+                        <ListBox Grid.Row="1" 
+                                x:Name="AccessLogListBox"
+                                Background="Transparent" 
+                                BorderThickness="0"
+                                ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                ItemsSource="{Binding AccessLogs}"
+                                SelectedItem="{Binding SelectedEmployee}">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="Transparent" 
+                                            Padding="15,10" 
+                                            BorderThickness="0,0,0,1" 
+                                            BorderBrush="{StaticResource BorderColor}">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="200"/>
+                                                <ColumnDefinition Width="150"/>
+                                                <ColumnDefinition Width="150"/>
+                                                <ColumnDefinition Width="150"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <!-- 시간 -->
+                                            <TextBlock Grid.Column="0" 
+                                                       Text="{Binding FormattedDate}" 
+                                                       Style="{StaticResource BodyTextStyle}"
+                                                       HorizontalAlignment="Center"
+                                                       FontFamily="Consolas"/>
+
+                                            <!-- 이름 -->
+                                            <StackPanel Grid.Column="1" Margin="10,0">
+                                                <TextBlock Text="{Binding Name}" 
+                                                           Style="{StaticResource BodyTextStyle}" 
+                                                           HorizontalAlignment="Center"
+                                                           FontWeight="Bold"/>
+                                                <TextBlock Text="{Binding Sabun}" 
+                                                           Style="{StaticResource LabelTextStyle}" 
+                                                           HorizontalAlignment="Center"
+                                                           FontSize="11"/>
+                                            </StackPanel>
+
+                                            <!-- 소속 -->
+                                            <TextBlock Grid.Column="2" 
+                                                       Text="{Binding OrgName}" 
+                                                       Style="{StaticResource BodyTextStyle}"
+                                                       HorizontalAlignment="Center"
+                                                       Margin="10,0"
+                                                       TextTrimming="CharacterEllipsis"/>
+
+                                            <!-- 상태 -->
+                                            <Border Grid.Column="3" 
+                                                    CornerRadius="10" 
+                                                    Padding="8,3"
+                                                    Margin="10,0">
+                                                <Border.Style>
+                                                    <Style TargetType="Border">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding State}" Value="IN">
+                                                                <Setter Property="Background" Value="{StaticResource SuccessColor}"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding State}" Value="OUT">
+                                                                <Setter Property="Background" Value="{StaticResource WarningColor}"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                                <TextBlock Text="{Binding StateName}" 
+                                                           Foreground="White" 
+                                                           FontWeight="Bold" 
+                                                           VerticalAlignment="Center"
+                                                           HorizontalAlignment="Center" 
+                                                           FontSize="11"/>
+                                            </Border>
+
+                                            <!-- 위치 -->
+                                            <TextBlock Grid.Column="4" 
+                                                       Text="{Binding EqName}" 
+                                                       Style="{StaticResource LabelTextStyle}"
+                                                       Margin="10,0"
+                                                       TextTrimming="CharacterEllipsis"/>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                            <ListBox.ItemContainerStyle>
+                                <Style TargetType="ListBoxItem">
+                                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                    <Setter Property="Padding" Value="0"/>
+                                    <Setter Property="Background" Value="Transparent"/>
+                                    <Setter Property="BorderThickness" Value="0"/>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsSelected" Value="True">
+                                            <Setter Property="Background" Value="{StaticResource PrimaryLightColor}"/>
+                                        </Trigger>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="{StaticResource SecondaryLightColor}"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ListBox.ItemContainerStyle>
+                        </ListBox>
+                    </Grid>
                 </Border>
 
-                <!-- 상태 컬러 섹션 -->
-                <Border Style="{StaticResource CardStyle}">
-                    <StackPanel>
-                        <TextBlock Text="상태 컬러 예제" 
-                                   Style="{StaticResource H3}"/>
-                        <WrapPanel>
-                            <Border Style="{StaticResource SuccessBadgeStyle}">
-                                <TextBlock Text="성공" Style="{StaticResource BadgeTextStyle}"/>
-                            </Border>
-                            <Border Style="{StaticResource WarningBadgeStyle}">
-                                <TextBlock Text="경고" Style="{StaticResource BadgeTextStyle}"/>
-                            </Border>
-                            <Border Style="{StaticResource ErrorBadgeStyle}">
-                                <TextBlock Text="오류" Style="{StaticResource BadgeTextSecondaryStyle}"/>
-                            </Border>
-                            <Border Style="{StaticResource InfoBadgeStyle}">
-                                <TextBlock Text="정보" Style="{StaticResource BadgeTextStyle}"/>
-                            </Border>
-                        </WrapPanel>
-                    </StackPanel>
-                </Border>
+            </Grid>
 
-                <!-- 입력 필드 섹션 -->
-                <Border Style="{StaticResource CardStyle}">
-                    <StackPanel>
-                        <TextBlock Text="입력 필드 예제" 
-                                   Style="{StaticResource H3}"/>
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <StackPanel Grid.Column="0" Margin="0,0,10,0">
-                                <TextBlock Text="사용자명:" Style="{StaticResource LabelTextStyle}"/>
-                                <TextBox Style="{StaticResource ModernTextBoxStyle}"/>
-                            </StackPanel>
-                            <StackPanel Grid.Column="1" Margin="10,0,0,0">
-                                <TextBlock Text="비밀번호 (눈 모양 클릭으로 보기/숨기기):" Style="{StaticResource LabelTextStyle}"/>
-                                <components:PasswordBoxWithToggle />
-                            </StackPanel>
-                        </Grid>
+            <!-- 하단 상태바 -->
+            <Border Grid.Row="2" 
+                    Style="{StaticResource CardStyle}" 
+                    Margin="0,15,0,0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
 
-                        <!-- 추가 입력 필드 예제 -->
-                        <Separator Margin="0,20,0,15" Background="{StaticResource BorderColor}"/>
-                        <TextBlock Text="다양한 입력 필드 스타일:" Style="{StaticResource LabelTextStyle}"/>
-                        <Grid Margin="0,10">
-                            <Grid.RowDefinitions>
-                                <RowDefinition/>
-                                <RowDefinition/>
-                            </Grid.RowDefinitions>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" 
+                               Text="{Binding AccessLogs.Count, StringFormat='총 {0}건의 출입 기록'}" 
+                               Style="{StaticResource BodyTextStyle}" 
+                               VerticalAlignment="Center"/>
 
-                            <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,10,10">
-                                <TextBlock Text="이메일:" Style="{StaticResource LabelTextStyle}"/>
-                                <TextBox Text="example@email.com" Style="{StaticResource ModernTextBoxStyle}"/>
-                            </StackPanel>
+                    <Border Grid.Column="1" 
+                            Background="{StaticResource SuccessColor}" 
+                            CornerRadius="5" 
+                            Padding="8,3" 
+                            Margin="10,0">
+                        <TextBlock Text="출입: 3" 
+                                   Foreground="White" 
+                                   FontWeight="Bold"/>
+                    </Border>
 
-                            <StackPanel Grid.Row="0" Grid.Column="1" Margin="10,0,0,10">
-                                <TextBlock Text="기존 패스워드박스:" Style="{StaticResource LabelTextStyle}"/>
-                                <PasswordBox Style="{StaticResource ModernPasswordBoxStyle}"/>
-                            </StackPanel>
+                    <Border Grid.Column="2" 
+                            Background="{StaticResource WarningColor}" 
+                            CornerRadius="5" 
+                            Padding="8,3" 
+                            Margin="10,0">
+                        <TextBlock Text="퇴실: 2" 
+                                   Foreground="White" 
+                                   FontWeight="Bold"/>
+                    </Border>
 
-                            <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,10,10,0">
-                                <TextBlock Text="새 비밀번호:" Style="{StaticResource LabelTextStyle}"/>
-                                <components:PasswordBoxWithToggle />
-                            </StackPanel>
-
-                            <StackPanel Grid.Row="1" Grid.Column="1" Margin="10,10,0,0">
-                                <TextBlock Text="비밀번호 확인:" Style="{StaticResource LabelTextStyle}"/>
-                                <components:PasswordBoxWithToggle />
-                            </StackPanel>
-                        </Grid>
-                    </StackPanel>
-                </Border>
-
-                <!-- 스타일 미리보기 섹션 -->
-                <Border Style="{StaticResource CardStyle}">
-                    <StackPanel>
-                        <TextBlock Text="타이포그래피 예제" 
-                                   Style="{StaticResource H3}"/>
-                        <StackPanel Margin="0,10">
-                            <TextBlock Text="H1 제목 스타일" Style="{StaticResource H1}"/>
-                            <TextBlock Text="H2 제목 스타일" Style="{StaticResource H2}"/>
-                            <TextBlock Text="H3 제목 스타일" Style="{StaticResource H3}"/>
-                            <TextBlock Text="일반 본문 텍스트 스타일입니다." Style="{StaticResource BodyTextStyle}"/>
-                            <TextBlock Text="라벨 텍스트 스타일" Style="{StaticResource LabelTextStyle}"/>
-                        </StackPanel>
-                    </StackPanel>
-                </Border>
-
-                <!-- 카드 예제 섹션 -->
-                <Border Style="{StaticResource CardStyle}">
-                    <StackPanel>
-                        <TextBlock Text="카드 스타일 예제" 
-                                   Style="{StaticResource H3}"/>
-                        <WrapPanel>
-                            <Border Style="{StaticResource SmallCardStyle}">
-                                <TextBlock Text="작은 카드" Style="{StaticResource BodyTextStyle}"/>
-                            </Border>
-                            <Border Style="{StaticResource SmallCardStyle}">
-                                <TextBlock Text="작은 카드 2" Style="{StaticResource BodyTextStyle}"/>
-                            </Border>
-                            <Border Style="{StaticResource SmallCardStyle}">
-                                <TextBlock Text="작은 카드 3" Style="{StaticResource BodyTextStyle}"/>
-                            </Border>
-                        </WrapPanel>
-                    </StackPanel>
-                </Border>
-
-                <!-- 컬러 팔레트 섹션 -->
-                <Border Style="{StaticResource CardStyle}">
-                    <StackPanel>
-                        <TextBlock Text="컬러 팔레트" 
-                                   Style="{StaticResource H3}"/>
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition/>
-                                <RowDefinition/>
-                                <RowDefinition/>
-                            </Grid.RowDefinitions>
-
-                            <!-- Primary Colors -->
-                            <WrapPanel Grid.Row="0" Margin="0,5">
-                                <Rectangle Width="50" Height="50" Fill="{StaticResource PrimaryColor}" Margin="5"/>
-                                <Rectangle Width="50" Height="50" Fill="{StaticResource PrimaryDarkColor}" Margin="5"/>
-                                <Rectangle Width="50" Height="50" Fill="{StaticResource PrimaryLightColor}" Margin="5"/>
-                            </WrapPanel>
-
-                            <!-- Secondary Colors -->
-                            <WrapPanel Grid.Row="1" Margin="0,5">
-                                <Rectangle Width="50" Height="50" Fill="{StaticResource SecondaryColor}" Margin="5"/>
-                                <Rectangle Width="50" Height="50" Fill="{StaticResource SecondaryDarkColor}" Margin="5"/>
-                                <Rectangle Width="50" Height="50" Fill="{StaticResource SecondaryLightColor}" Margin="5"/>
-                            </WrapPanel>
-
-                            <!-- Accent Colors -->
-                            <WrapPanel Grid.Row="2" Margin="0,5">
-                                <Rectangle Width="50" Height="50" Fill="{StaticResource AccentColor}" Margin="5"/>
-                                <Rectangle Width="50" Height="50" Fill="{StaticResource AccentDarkColor}" Margin="5"/>
-                                <Rectangle Width="50" Height="50" Fill="{StaticResource AccentLightColor}" Margin="5"/>
-                            </WrapPanel>
-                        </Grid>
-                    </StackPanel>
-                </Border>
-
-            </StackPanel>
-        </ScrollViewer>
+                    <TextBlock Grid.Column="3" 
+                               Text="F12: 설정 | F5: 콘솔" 
+                               Style="{StaticResource LabelTextStyle}" 
+                               VerticalAlignment="Center" 
+                               Margin="20,0,0,0"/>
+                </Grid>
+            </Border>
+        </Grid>
 
         <!-- 설정 뷰 -->
         <views:SettingsView x:Name="SettingsView" 
@@ -216,5 +405,6 @@
         <views:ConsoleView x:Name="ConsoleView" 
                            Visibility="Collapsed"
                            ConsoleClosed="ConsoleView_ConsoleClosed"/>
+
     </Grid>
 </Window>
