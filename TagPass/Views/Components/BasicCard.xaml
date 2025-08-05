@@ -37,212 +37,272 @@
 
     <!-- 메인 글래스 카드 -->
     <Border Style="{StaticResource GlassmorphismBorder}" 
-            MinHeight="300" MinWidth="400"
-            MaxHeight="600" MaxWidth="800">
+            MinHeight="300" MinWidth="400">
         <Border.Background>
-            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1" Opacity="0.1">
+            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1" Opacity="0.2">
                 <GradientStop Color="#FF4A90E2" Offset="0"/>
                 <GradientStop Color="#FF7B68EE" Offset="0.5"/>
                 <GradientStop Color="#FF50C878" Offset="1"/>
             </LinearGradientBrush>
         </Border.Background>
 
-        <Grid x:Name="MainGrid" Margin="20">
-            <!-- 가로형 레이아웃 (기본) -->
-            <Grid x:Name="LandscapeLayout" Visibility="Visible">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="2*"/>
-                    <ColumnDefinition Width="3*"/>
-                </Grid.ColumnDefinitions>
+        <!-- 추가 단색 배경 레이어 -->
+        <Border CornerRadius="15">
+            <Border.Background>
+                <SolidColorBrush Color="#2B364C" Opacity="0.7"/>
+            </Border.Background>
 
-                <!-- 왼쪽: 사진 영역 -->
-                <Grid Grid.Column="0" Margin="0">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="*"/>
-                    </Grid.RowDefinitions>
+            <Grid x:Name="MainGrid" Margin="20">
+                <!-- 가로형 레이아웃 (기본) -->
+                <Grid x:Name="LandscapeLayout" Visibility="Visible">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="1.2*"/>
+                    </Grid.ColumnDefinitions>
 
-                    <!-- 사진 -->
-                    <Border Grid.Row="0" 
+                    <!-- 왼쪽: 사진 영역 -->
+                    <Grid Grid.Column="0" Margin="0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- 사진 -->
+                        <Border Grid.Row="0" 
                             Background="#22FFFFFF" 
                             CornerRadius="10" 
                             Padding="10">
-                        <Border CornerRadius="8">
-                            <Image Source="{Binding Photo}" 
+                            <Border CornerRadius="8">
+                                <Image Source="{Binding Photo}" 
                                    Stretch="UniformToFill"
                                    VerticalAlignment="Center"
                                    HorizontalAlignment="Center">
-                                <Image.Clip>
-                                    <RectangleGeometry RadiusX="8" RadiusY="8" 
+                                    <Image.Clip>
+                                        <RectangleGeometry RadiusX="8" RadiusY="8" 
                                                        Rect="0,0,200,257"/>
-                                </Image.Clip>
-                            </Image>
+                                    </Image.Clip>
+                                </Image>
+                            </Border>
                         </Border>
-                    </Border>
-                </Grid>
+                    </Grid>
 
-                <!-- 오른쪽: 정보 영역 -->
-                <StackPanel Grid.Column="1" 
+                    <!-- 오른쪽: 정보 영역 -->
+                    <Grid Grid.Column="1" 
                             VerticalAlignment="Top" 
                             Margin="20,0,0,0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="0.5*"/>
+                            <ColumnDefinition Width="0.5*"/>
+                        </Grid.ColumnDefinitions>
 
-                    <!-- 사원번호 -->
-                    <Border Background="#33FFFFFF" 
-                            CornerRadius="8" 
+                        <!-- 사원번호 -->
+                        <Border Grid.Row="0" Grid.Column="0"
+                            Background="#33FFFFFF" 
+                            CornerRadius="8"
                             Padding="10,5" 
-                            Margin="0,0,0,10"
-                            HorizontalAlignment="Left">
-                        <TextBlock Text="{Binding Sabun}" 
+                            Margin="0,0,5,10"
+                            HorizontalAlignment="Stretch">
+                            <TextBlock Text="{Binding Sabun}" 
                                    FontWeight="Bold" 
-                                   FontSize="14" 
-                                   Foreground="White"/>
-                    </Border>
+                                   FontSize="22" 
+                                   Foreground="White"
+                                   HorizontalAlignment="Center"/>
+                        </Border>
 
-                    <!-- 이름 -->
-                    <Border Background="#33FFFFFF" 
+                        <!-- 이름 -->
+                        <Border Grid.Row="1" Grid.ColumnSpan="2"
+                            Background="#33FFFFFF" 
                             CornerRadius="10" 
-                            Padding="15" 
+                            Padding="20,40" 
                             Margin="0,0,0,15">
-                        <TextBlock Text="{Binding Name}" 
-                                   FontSize="24" 
+                            <TextBlock Text="{Binding Name}" 
+                                   FontSize="55" 
                                    FontWeight="Bold" 
                                    Foreground="White" 
                                    HorizontalAlignment="Center"/>
-                    </Border>
+                        </Border>
 
-                    <!-- 소속 -->
-                    <Border Background="#22FFFFFF" 
+                        <!-- 카드번호 -->
+                        <Border Grid.Row="2" Grid.ColumnSpan="2"
+                            Background="#33FFFFFF" 
                             CornerRadius="8" 
                             Padding="12,8" 
                             Margin="0,0,0,10">
-                        <StackPanel>
-                            <TextBlock Text="소속" 
-                                       FontSize="12" 
+                            <StackPanel>
+                                <TextBlock Text="카드번호" 
+                                       FontSize="21" 
                                        Foreground="#CCFFFFFF" 
                                        Margin="0,0,0,3"/>
-                            <TextBlock Text="{Binding OrgName}" 
-                                       FontSize="16" 
+                                <TextBlock Text="{Binding CardNo}" 
+                                       FontSize="30" 
                                        FontWeight="SemiBold" 
                                        Foreground="White"/>
-                        </StackPanel>
-                    </Border>
-
-                    <!-- 직책 -->
-                    <Border Background="#22FFFFFF" 
-                            CornerRadius="8" 
-                            Padding="12,8">
-                        <StackPanel>
-                            <TextBlock Text="직책" 
-                                       FontSize="12" 
-                                       Foreground="#CCFFFFFF" 
-                                       Margin="0,0,0,3"/>
-                            <TextBlock Text="{Binding GradeName}" 
-                                       FontSize="16" 
-                                       FontWeight="SemiBold" 
-                                       Foreground="White"/>
-                        </StackPanel>
-                    </Border>
-                </StackPanel>
-            </Grid>
-
-            <!-- 세로형 레이아웃 -->
-            <Grid x:Name="PortraitLayout" Visibility="Collapsed">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="2*"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
-
-                <!-- 상단: 사원번호 -->
-                <Border Grid.Row="0" 
-                        Background="#33FFFFFF" 
-                        CornerRadius="8" 
-                        Padding="15,8" 
-                        Margin="0,0,0,15"
-                        HorizontalAlignment="Center">
-                    <TextBlock Text="{Binding Sabun}" 
-                               FontWeight="Bold" 
-                               FontSize="16" 
-                               Foreground="White"/>
-                </Border>
-
-                <!-- 중간: 사진 -->
-                <Border Grid.Row="1" 
-                        Background="#22FFFFFF" 
-                        CornerRadius="10" 
-                        Padding="15"
-                        Margin="0,0,0,15">
-                    <Border CornerRadius="8">
-                        <Image Source="{Binding Photo}" 
-                               Stretch="UniformToFill"
-                               VerticalAlignment="Center"
-                               HorizontalAlignment="Center">
-                            <Image.Clip>
-                                <RectangleGeometry RadiusX="8" RadiusY="8" 
-                                                   Rect="0,0,200,257"/>
-                            </Image.Clip>
-                        </Image>
-                    </Border>
-                </Border>
-
-                <!-- 하단: 정보 영역 -->
-                <StackPanel Grid.Row="2" VerticalAlignment="Top">
-                    <!-- 이름 -->
-                    <Border Background="#33FFFFFF" 
-                            CornerRadius="8" 
-                            Padding="12,8" 
-                            Margin="0,0,0,8">
-                        <TextBlock Text="{Binding Name}" 
-                                   FontSize="18" 
-                                   FontWeight="Bold" 
-                                   Foreground="White" 
-                                   HorizontalAlignment="Center"/>
-                    </Border>
-
-                    <!-- 소속과 직책을 가로로 배치 -->
-                    <Grid Margin="0,0,0,5">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
+                            </StackPanel>
+                        </Border>
 
                         <!-- 소속 -->
-                        <Border Grid.Column="0" 
-                                Background="#22FFFFFF" 
-                                CornerRadius="6" 
-                                Padding="8,6" 
-                                Margin="0,0,4,0">
+                        <Border Grid.Row="3" Grid.ColumnSpan="2"
+                            Background="#22FFFFFF" 
+                            CornerRadius="8" 
+                            Padding="12,8" 
+                            Margin="0,0,0,10">
                             <StackPanel>
                                 <TextBlock Text="소속" 
-                                           FontSize="10" 
-                                           Foreground="#CCFFFFFF"/>
+                                       FontSize="21" 
+                                       Foreground="#CCFFFFFF" 
+                                       Margin="0,0,0,3"/>
                                 <TextBlock Text="{Binding OrgName}" 
-                                           FontSize="12" 
-                                           FontWeight="SemiBold" 
-                                           Foreground="White" 
-                                           TextTrimming="CharacterEllipsis"/>
+                                       FontSize="30" 
+                                       FontWeight="SemiBold" 
+                                       Foreground="White"/>
                             </StackPanel>
                         </Border>
 
                         <!-- 직책 -->
-                        <Border Grid.Column="1" 
+                        <Border Grid.Row="4" Grid.ColumnSpan="2"
+                            Background="#22FFFFFF" 
+                            CornerRadius="8" 
+                            Padding="12,8">
+                            <StackPanel>
+                                <TextBlock Text="직책" 
+                                       FontSize="21" 
+                                       Foreground="#CCFFFFFF" 
+                                       Margin="0,0,0,3"/>
+                                <TextBlock Text="{Binding GradeName}" 
+                                       FontSize="30" 
+                                       FontWeight="SemiBold" 
+                                       Foreground="White"/>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </Grid>
+
+                <!-- 세로형 레이아웃 -->
+                <Grid x:Name="PortraitLayout" Visibility="Collapsed">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="2*"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- 상단: 사원번호 -->
+                    <Border Grid.Row="0" 
+                        Background="#33FFFFFF" 
+                        CornerRadius="8" 
+                        Padding="15,8" 
+                        Margin="0,0,0,15"
+                        MaxWidth="150"
+                        HorizontalAlignment="Center">
+                        <TextBlock Text="{Binding Sabun}" 
+                               FontWeight="Bold" 
+                               FontSize="16" 
+                               Foreground="White"/>
+                    </Border>
+
+                    <!-- 중간: 사진 -->
+                    <Border Grid.Row="1" 
+                        Background="#22FFFFFF" 
+                        CornerRadius="10" 
+                        Padding="15"
+                        Margin="0,0,0,15">
+                        <Border CornerRadius="8">
+                            <Image Source="{Binding Photo}" 
+                               Stretch="UniformToFill"
+                               VerticalAlignment="Center"
+                               HorizontalAlignment="Center">
+                                <Image.Clip>
+                                    <RectangleGeometry RadiusX="8" RadiusY="8" 
+                                                   Rect="0,0,200,257"/>
+                                </Image.Clip>
+                            </Image>
+                        </Border>
+                    </Border>
+
+                    <!-- 하단: 정보 영역 -->
+                    <StackPanel Grid.Row="2" VerticalAlignment="Top">
+                        <!-- 이름 -->
+                        <Border Background="#33FFFFFF" 
+                            CornerRadius="8" 
+                            Padding="12,8" 
+                            Margin="0,0,0,8">
+                            <TextBlock Text="{Binding Name}" 
+                                   FontSize="18" 
+                                   FontWeight="Bold" 
+                                   Foreground="White" 
+                                   HorizontalAlignment="Center"/>
+                        </Border>
+
+                        <!-- 카드번호 -->
+                        <Border Background="#33FFFFFF" 
+                            CornerRadius="8" 
+                            Padding="8,6" 
+                            Margin="0,0,0,8">
+                            <StackPanel>
+                                <TextBlock Text="카드번호" 
+                                       FontSize="10" 
+                                       Foreground="#CCFFFFFF"
+                                       HorizontalAlignment="Center"/>
+                                <TextBlock Text="{Binding CardNo}" 
+                                       FontSize="12" 
+                                       FontWeight="SemiBold" 
+                                       Foreground="White"
+                                       HorizontalAlignment="Center"
+                                       TextTrimming="CharacterEllipsis"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- 소속과 직책을 가로로 배치 -->
+                        <Grid Margin="0,0,0,5">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- 소속 -->
+                            <Border Grid.Column="0" 
+                                Background="#22FFFFFF" 
+                                CornerRadius="6" 
+                                Padding="8,6" 
+                                Margin="0,0,4,0">
+                                <StackPanel>
+                                    <TextBlock Text="소속" 
+                                           FontSize="10" 
+                                           Foreground="#CCFFFFFF"/>
+                                    <TextBlock Text="{Binding OrgName}" 
+                                           FontSize="12" 
+                                           FontWeight="SemiBold" 
+                                           Foreground="White" 
+                                           TextTrimming="CharacterEllipsis"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- 직책 -->
+                            <Border Grid.Column="1" 
                                 Background="#22FFFFFF" 
                                 CornerRadius="6" 
                                 Padding="8,6" 
                                 Margin="4,0,0,0">
-                            <StackPanel>
-                                <TextBlock Text="직책" 
+                                <StackPanel>
+                                    <TextBlock Text="직책" 
                                            FontSize="10" 
                                            Foreground="#CCFFFFFF"/>
-                                <TextBlock Text="{Binding GradeName}" 
+                                    <TextBlock Text="{Binding GradeName}" 
                                            FontSize="12" 
                                            FontWeight="SemiBold" 
                                            Foreground="White"
                                            TextTrimming="CharacterEllipsis"/>
-                            </StackPanel>
-                        </Border>
-                    </Grid>
-                </StackPanel>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </StackPanel>
+                </Grid>
             </Grid>
-        </Grid>
+        </Border>
     </Border>
 </UserControl>

@@ -1,6 +1,4 @@
-﻿using System.Linq.Expressions;
-
-namespace TagPass.Common
+﻿namespace TagPass.Common
 {
     public static class StringClass
     {
@@ -24,10 +22,19 @@ namespace TagPass.Common
         public const string SendUsageStatistics = "SendUsageStatistics";
     }
 
+    public static class Animations
+    {
+        public const string SlideCard = "SlideCard";
+    }
+
     public static class Keys
     {
         public const string IniSettings = "IniSettings";
         public const string SettingsService = "SettingsService";
         public const string MqttService = "MqttService";
+
+        // Animation 관련
+        public const string SlideShowAnimation = "SlideShowAnimation";
+        public const string SlideHideAnimation = "SlideHideAnimation";
     }
 }
