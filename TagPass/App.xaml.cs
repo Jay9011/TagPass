@@ -47,7 +47,7 @@ namespace TagPass
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"MQTT 서비스 정리 중 오류: {ex.Message}");
-            } 
+            }
             #endregion
 
             base.OnExit(e);
@@ -113,7 +113,7 @@ namespace TagPass
                 // 연결 상태 변경 이벤트 구독
                 mqttService.ConnectionStatusChanged += OnMqttConnectionStatusChanged;
 
-                // 메시지 수신 이벤트 구독 (필요시)
+                // 메시지 수신 이벤트 구독
                 mqttService.MessageReceived += OnMqttMessageReceived;
 
                 Singletons.Instance.AddKeyedSingleton<IMqttService>(Keys.MqttService, mqttService);

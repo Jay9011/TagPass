@@ -5,20 +5,19 @@ using TagPass.Common;
 using TagPass.Services;
 using TagPass.Views;
 using TagPass.Models;
-using System.Windows.Threading;
 using S1SocketDataDTO.Models;
 using System;
 using System.Windows.Media;
-using System.Collections.Generic;
-using System.Linq;
 using System.Windows.Controls;
+using System.Xml.Serialization;
+using System.IO;
 
 namespace TagPass
 {
     public partial class MainWindow : Window
     {
         private AccessMonitorViewModel _viewModel;
-        private DispatcherTimer _accessEventTimer;
+        private IMqttService _mqttService;
 
         // BasicCard 참조
         private Views.Components.BasicCard _basicCard;
@@ -37,21 +36,9 @@ namespace TagPass
             KeyDown += MainWindow_KeyDown;
             Focusable = true;
 
-            // BasicCard 참조 가져오기
-            _basicCard = FindName("BasicCard") as Views.Components.BasicCard;
+            _basicCard = FindName("BasicCard") as Views.Components.BasicCard;   // BasicCard 참조 가져오기
 
-            #region 출입 이벤트 시뮬레이션
-
-            _accessEventTimer = new DispatcherTimer();
-            _accessEventTimer.Tick += (s, e) =>
-            {
-                SimulateNewAccessEvent();
-                SetRandomInterval();
-            };
-            SetRandomInterval();
-            _accessEventTimer.Start(); 
-
-            #endregion
+            InitializeMqttMessageHandling();    // MQTT 서비스 구독 및 메시지 처리 설정
         }
 
         public ConsoleView GetConsoleView()
@@ -125,6 +112,110 @@ namespace TagPass
 
         #endregion
 
+        #region 이벤트 수신
+
+        /// <summary>
+        /// MQTT 메시지 처리 초기화
+        /// </summary>
+        private void InitializeMqttMessageHandling()
+        {
+            try
+            {
+                _mqttService = Singletons.Instance.GetKeyedSingleton<IMqttService>(Keys.MqttService);
+                _mqttService.MessageReceived += OnMqttMessageReceived;
+
+                GetConsoleView().LogInfo("MQTT 메시지 처리기가 초기화되었습니다.");
+            }
+            catch (Exception ex)
+            {
+                GetConsoleView().LogError($"MQTT 메시지 처리기 초기화 실패: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// MQTT 메시지 수신 이벤트 핸들러
+        /// </summary>
+        private void OnMqttMessageReceived(object? sender, MqttMessageEventArgs e)
+        {
+            try
+            {
+                if (!string.IsNullOrWhiteSpace(e.Payload))
+                {
+                    var eventData = TryParseAlarmEventDto(e.Payload);   // XML 메시지를 AlarmEventDto로 변환 시도
+
+                    if (eventData != null)
+                    {
+                        Dispatcher.BeginInvoke(() =>
+                        {
+                            ProcessAccessEvent(eventData);
+                        });
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                GetConsoleView().LogError($"MQTT 메시지 처리 중 오류: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// XML 페이로드를 AlarmEventDto로 변환 시도
+        /// </summary>
+        /// <param name="xmlPayload">XML 페이로드</param>
+        /// <returns>변환된 AlarmEventDto 또는 null</returns>
+        private AlarmEventDto? TryParseAlarmEventDto(string xmlPayload)
+        {
+            try
+            {
+                var serializer = new XmlSerializer(typeof(AlarmEventDto));
+
+                using (var stringReader = new StringReader(xmlPayload))
+                {
+                    var eventData = serializer.Deserialize(stringReader) as AlarmEventDto;
+
+                    if (eventData != null)
+                    {
+                        return eventData;
+                    }
+
+                    return null;
+                }
+            }
+            catch (InvalidOperationException xmlEx)
+            {
+                GetConsoleView().LogError($"[MQTT 처리] XML 파싱 오류: {xmlEx.Message}");
+                return null;
+            }
+            catch (Exception parseEx)
+            {
+                GetConsoleView().LogError($"[MQTT 처리] 데이터 처리 오류: {parseEx.Message}");
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// MQTT로 수신된 출입 이벤트 데이터 처리
+        /// </summary>
+        /// <param name="eventData">출입 이벤트 데이터</param>
+        public void ProcessAccessEvent(AlarmEventDto eventData)
+        {
+            if (eventData == null) return;
+
+            try
+            {
+                _basicCard?.UpdateCard(eventData);
+                _viewModel.AddAccessLog(eventData);
+
+                GetConsoleView().LogInfo($"새로운 출입 이벤트: {eventData.Name} ({eventData.StateName})");
+            }
+            catch (Exception ex)
+            {
+                GetConsoleView().LogError($"출입 이벤트 처리 중 오류: {ex.Message}");
+            }
+        }
+
+        #endregion
+
         /// <summary>
         /// 풀스크린 토글
         /// </summary>
@@ -143,54 +234,6 @@ namespace TagPass
                 GetConsoleView().LogInfo("전체화면 모드로 전환되었습니다.");
             }
         }
-
-        #region 테스트
-
-        /// <summary>
-        /// 랜덤 간격으로 타이머 설정
-        /// </summary>
-        private void SetRandomInterval()
-        {
-            var random = new Random();
-            double randomSeconds = (random.NextDouble() * 1.5) + 1.5; // 1.5 ~ 3.0초 사이 랜덤
-            _accessEventTimer.Interval = TimeSpan.FromSeconds(randomSeconds);
-        }
-
-        /// <summary>
-        /// 새로운 출입 이벤트 시뮬레이션
-        /// </summary>
-        private void SimulateNewAccessEvent()
-        {
-            var random = new Random();
-            var names = new[] { "홍길동", "김철수", "이영희", "박민수", "정수연", "최동훈", "강지민", "윤서준" };
-            var departments = new[] { "개발팀", "인사팀", "영업팀", "기획팀", "총무팀", "마케팅팀", "디자인팀" };
-            var positions = new[] { "사원", "주임", "대리", "과장", "팀장", "부장" };
-            var locations = new[] { "정문 출입구", "후문 출입구", "주차장 출입구", "비상구" };
-            var states = new[] { "IN", "OUT" };
-
-            var newEvent = new AlarmEventDto
-            {
-                AlarmID = random.Next(1000, 9999),
-                FormattedDate = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
-                Sabun = $"2024{random.Next(100, 999):D3}",
-                Name = names[random.Next(names.Length)],
-                OrgName = departments[random.Next(departments.Length)],
-                GradeName = positions[random.Next(positions.Length)],
-                State = states[random.Next(states.Length)],
-                StateName = states[random.Next(states.Length)] == "IN" ? "출입" : "퇴실",
-                Photo = $"/Images/sample{random.Next(1, 6)}.jpg",
-                EqName = locations[random.Next(locations.Length)],
-                LocationName = "본사 1층"
-            };
-
-            // BasicCard에 새로운 출입 이벤트 표시 (자동으로 타이머도 관리됨)
-            _basicCard?.UpdateCard(newEvent);
-
-            // ViewModel에 새 이벤트 추가
-            _viewModel.AddAccessLog(newEvent);
-        }
-
-        #endregion
 
         /// <summary>
         /// 자식 요소를 재귀적으로 찾는 헬퍼 메서드
@@ -217,9 +260,14 @@ namespace TagPass
         /// </summary>
         protected override void OnClosed(EventArgs e)
         {
-            _accessEventTimer?.Stop();  // 타이머 정리
-            _basicCard?.Dispose();      // BasicCard 리소스 정리
+            // MQTT 이벤트 구독 해제
+            if (_mqttService != null)
+            {
+                _mqttService.MessageReceived -= OnMqttMessageReceived;
+            }
 
+            _viewModel?.Dispose();      // ViewModel 리소스 정리
+            _basicCard?.Dispose();      // BasicCard 리소스 정리
             base.OnClosed(e);
         }
     }

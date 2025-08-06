@@ -72,14 +72,12 @@
                             CornerRadius="10" 
                             Padding="10">
                             <Border CornerRadius="8">
-                                <Image Source="{Binding Photo}" 
-                                   Stretch="UniformToFill"
+                                <Image Source="{Binding PhotoImg}"
+                                   Stretch="Uniform"
                                    VerticalAlignment="Center"
-                                   HorizontalAlignment="Center">
-                                    <Image.Clip>
-                                        <RectangleGeometry RadiusX="8" RadiusY="8" 
-                                                       Rect="0,0,200,257"/>
-                                    </Image.Clip>
+                                   HorizontalAlignment="Center"
+                                   MinWidth="100"
+                                   MinHeight="100">
                                 </Image>
                             </Border>
                         </Border>
@@ -120,8 +118,8 @@
                             Background="#33FFFFFF" 
                             CornerRadius="10" 
                             Padding="20,40" 
-                            Margin="0,0,0,15">
-                            <TextBlock Text="{Binding Name}" 
+                            Margin="0,0,0,10">
+                            <TextBlock Text="{Binding PersonName}" 
                                    FontSize="55" 
                                    FontWeight="Bold" 
                                    Foreground="White" 
@@ -168,7 +166,8 @@
                         <Border Grid.Row="4" Grid.ColumnSpan="2"
                             Background="#22FFFFFF" 
                             CornerRadius="8" 
-                            Padding="12,8">
+                            Padding="12,8"
+                            Margin="0,0,0,10">
                             <StackPanel>
                                 <TextBlock Text="직책" 
                                        FontSize="21" 
@@ -212,10 +211,12 @@
                         Padding="15"
                         Margin="0,0,0,15">
                         <Border CornerRadius="8">
-                            <Image Source="{Binding Photo}" 
+                            <Image Source="{Binding PhotoImg}"
                                Stretch="UniformToFill"
                                VerticalAlignment="Center"
-                               HorizontalAlignment="Center">
+                               HorizontalAlignment="Center"
+                               MinWidth="100"
+                               MinHeight="100">
                                 <Image.Clip>
                                     <RectangleGeometry RadiusX="8" RadiusY="8" 
                                                    Rect="0,0,200,257"/>

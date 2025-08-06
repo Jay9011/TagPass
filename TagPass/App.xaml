@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:TagPass"
              xmlns:converters="clr-namespace:TagPass.Converters"
+             xmlns:models="clr-namespace:TagPass.Models"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
         <ResourceDictionary>
@@ -14,6 +15,8 @@
             <!-- 컨버터 추가 -->
             <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
             <converters:PercentageConverter x:Key="PercentageConverter"/>
+            <converters:DateFormatConverter x:Key="DateFormatConverter"/>
+            <converters:StringContainsConverter x:Key="StringContainsConverter"/>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

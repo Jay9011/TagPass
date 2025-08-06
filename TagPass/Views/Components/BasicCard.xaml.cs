@@ -2,6 +2,12 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
+using System.Windows.Media.Imaging;
+using System.Windows.Media;
+using System;
+using System.Net.Http;
+using System.IO;
+using System.ComponentModel;
 
 namespace TagPass.Views.Components
 {
@@ -11,12 +17,13 @@ namespace TagPass.Views.Components
     public partial class BasicCard : UserControl
     {
         private DispatcherTimer _clearTimer;
+        private BitmapImage _currentBitmapImage;
+        private readonly Dictionary<string, WeakReference> _imageCache = new Dictionary<string, WeakReference>();
 
         public BasicCard()
         {
             InitializeComponent();
             this.DataContext = this;
-
             this.SizeChanged += BasicCard_SizeChanged;
         }
 
@@ -33,6 +40,7 @@ namespace TagPass.Views.Components
             }
 
             ClearTimer();
+            CleanupCurrentImage();
 
             AlarmID = eventData.AlarmID;
             FormattedDate = eventData.FormattedDate ?? string.Empty;
@@ -41,7 +49,7 @@ namespace TagPass.Views.Components
             State = eventData.State ?? string.Empty;
             StateName = eventData.StateName ?? string.Empty;
             CardNo = eventData.CardNo ?? string.Empty;
-            Name = eventData.Name ?? string.Empty;
+            PersonName = eventData.Name ?? string.Empty;
             Sabun = eventData.Sabun ?? string.Empty;
             Photo = eventData.Photo ?? string.Empty;
             PhotoPath = eventData.PhotoPath ?? string.Empty;
@@ -57,6 +65,9 @@ namespace TagPass.Views.Components
             LocationName = eventData.LocationName ?? string.Empty;
             IsAlarm = eventData.IsAlarm;
 
+            // 이미지 처리
+            LoadImage(eventData.PhotoPath, eventData.Photo);
+
             StartClearTimer(); // 자동 클리어 타이머 시작
         }
 
@@ -66,6 +77,7 @@ namespace TagPass.Views.Components
         public void ClearCard()
         {
             ClearTimer();
+            CleanupCurrentImage();
 
             AlarmID = 0;
             FormattedDate = string.Empty;
@@ -74,7 +86,7 @@ namespace TagPass.Views.Components
             State = string.Empty;
             StateName = string.Empty;
             CardNo = string.Empty;
-            Name = string.Empty;
+            PersonName = string.Empty;
             Sabun = string.Empty;
             Photo = string.Empty;
             PhotoPath = string.Empty;
@@ -89,6 +101,7 @@ namespace TagPass.Views.Components
             LocationID = 0;
             LocationName = string.Empty;
             IsAlarm = 0;
+            PhotoImg = null; // PhotoImg 프로퍼티 초기화
         }
 
         /// <summary>
@@ -142,9 +155,167 @@ namespace TagPass.Views.Components
             }
         }
 
+        /// <summary>
+        /// 이미지 로드 및 메모리 관리
+        /// </summary>
+        /// <param name="imageUrl">이미지 URL</param>
+        private void LoadImage(string photoPath, string photo)
+        {
+            try
+            {
+                CleanupCurrentImage();
+
+                if (string.IsNullOrWhiteSpace(photoPath) || string.IsNullOrWhiteSpace(photo))
+                {
+                    return;
+                }
+
+                var imageUrl = $"{photoPath.TrimEnd('/')}/{photo}";
+
+                if (_imageCache.TryGetValue(imageUrl, out var cachedRef) &&
+                    cachedRef.Target is BitmapImage cachedImage && cachedImage.CanFreeze)
+                {
+                    PhotoImg = cachedImage;
+                    return;
+                }
+
+                var bitmapImage = new BitmapImage();
+                _currentBitmapImage = bitmapImage;
+
+                EventHandler<DownloadProgressEventArgs> progressHandler = null;
+                EventHandler downloadCompletedHandler = null;
+                EventHandler<ExceptionEventArgs> downloadFailedHandler = null;
+
+                progressHandler = (s, e) =>
+                {
+                    System.Diagnostics.Debug.WriteLine($"다운로드 진행률: {e.Progress}%");
+                };
+
+                downloadCompletedHandler = (s, e) =>
+                {
+                    try
+                    {
+                        var img = s as BitmapImage;
+                        if (img != null && _currentBitmapImage == img)
+                        {
+                            if (img.PixelWidth * img.PixelHeight * 4 > 2 * 1024 * 1024) // 2MB
+                            {
+                                img = ResizeImage(img, 800, 600);
+                            }
+
+                            PhotoImg = img;
+
+                            _imageCache[imageUrl] = new WeakReference(img); // 캐시 사용
+                        }
+                    }
+                    finally
+                    {
+                        if (s is BitmapImage bitmap)
+                        {
+                            bitmap.DownloadProgress -= progressHandler;
+                            bitmap.DownloadCompleted -= downloadCompletedHandler;
+                            bitmap.DownloadFailed -= downloadFailedHandler;
+                        }
+                    }
+                };
+
+                downloadFailedHandler = (s, e) =>
+                {
+                    try
+                    {
+                        System.Diagnostics.Debug.WriteLine($"이미지 다운로드 실패: {e.ErrorException}");
+                        PhotoImg = null;
+                    }
+                    finally
+                    {
+                        if (s is BitmapImage bitmap)
+                        {
+                            bitmap.DownloadProgress -= progressHandler;
+                            bitmap.DownloadCompleted -= downloadCompletedHandler;
+                            bitmap.DownloadFailed -= downloadFailedHandler;
+                        }
+                    }
+                };
+
+                bitmapImage.BeginInit();
+                bitmapImage.UriSource = new Uri(imageUrl, UriKind.Absolute);
+                bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                //bitmapImage.DecodePixelWidth = 800;
+                //bitmapImage.DecodePixelHeight = 600;
+
+                bitmapImage.DownloadProgress += progressHandler;
+                bitmapImage.DownloadCompleted += downloadCompletedHandler;
+                bitmapImage.DownloadFailed += downloadFailedHandler;
+
+                bitmapImage.EndInit();
+            }
+            catch (Exception e)
+            {
+                CleanupCurrentImage();
+                // TODO: 추후 오류 처리 필요
+            }
+        }
+
+        /// <summary>
+        /// 이미지 리사이즈
+        /// </summary>
+        /// <param name="img"></param>
+        /// <param name="maxWidth"></param>
+        /// <param name="maxHeight"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        private BitmapImage ResizeImage(BitmapImage img, int maxWidth, int maxHeight)
+        {
+            try
+            {
+                var scaleX = (double)maxWidth / img.PixelWidth;
+                var scaleY = (double)maxHeight / img.PixelHeight;
+                var scale = Math.Min(scaleX, scaleY);
+
+                if (scale >= 1.0) return img;
+
+                var newWidth = (int)(img.PixelWidth * scale);
+                var newHeight = (int)(img.PixelHeight * scale);
+
+                var resized = new BitmapImage();
+                resized.BeginInit();
+                resized.UriSource = img.UriSource;
+                resized.DecodePixelWidth = newWidth;
+                resized.DecodePixelHeight = newHeight;
+                resized.CacheOption = BitmapCacheOption.OnLoad;
+                resized.EndInit();
+
+                return resized;
+            }
+            catch (Exception)
+            {
+                return img;
+            }
+        }
+
+        /// <summary>
+        /// 이미지 정리
+        /// </summary>
+        private void CleanupCurrentImage()
+        {
+            if (_currentBitmapImage != null)
+            {
+                try
+                {
+                    _currentBitmapImage.UriSource = null;
+                }
+                catch (Exception)
+                {
+                }
+            }
+
+            PhotoImg = null;
+        }
+
         #region DependencyProperties
 
-        // 기본 식별 정보
+        // 기본 정보
+        public static readonly DependencyProperty IsAlarmProperty = CreateProperty<int>("IsAlarm");
         public static readonly DependencyProperty AlarmIDProperty = CreateProperty<int>("AlarmID");
         public static readonly DependencyProperty FormattedDateProperty = CreateProperty<string>("FormattedDate");
         public static readonly DependencyProperty EqMasterIDProperty = CreateProperty<int>("EqMasterID");
@@ -153,11 +324,14 @@ namespace TagPass.Views.Components
         public static readonly DependencyProperty StateNameProperty = CreateProperty<string>("StateName");
 
         // 카드 및 사원 정보
-        public static readonly DependencyProperty CardNoProperty = CreateProperty<string>("CardNo");
-        public static readonly DependencyProperty NameProperty = CreateProperty<string>("Name");
+        public static readonly DependencyProperty PersonNameProperty = CreateProperty<string>("PersonName");
         public static readonly DependencyProperty SabunProperty = CreateProperty<string>("Sabun");
-        public static readonly DependencyProperty PhotoProperty = CreateProperty<string>("Photo");
-        public static readonly DependencyProperty PhotoPathProperty = CreateProperty<string>("PhotoPath");
+        public static readonly DependencyProperty CardNoProperty = CreateProperty<string>("CardNo");
+
+        // 조직 정보
+        public static readonly DependencyProperty OrgCodeProperty = CreateProperty<string>("OrgCode");
+        public static readonly DependencyProperty OrgNameProperty = CreateProperty<string>("OrgName");
+        public static readonly DependencyProperty GradeNameProperty = CreateProperty<string>("GradeName");
 
         // 사용자 정의 필드
         public static readonly DependencyProperty PersonUser1Property = CreateProperty<string>("PersonUser1");
@@ -166,17 +340,14 @@ namespace TagPass.Views.Components
         public static readonly DependencyProperty PersonUser4Property = CreateProperty<string>("PersonUser4");
         public static readonly DependencyProperty PersonUser5Property = CreateProperty<string>("PersonUser5");
 
-        // 조직 정보
-        public static readonly DependencyProperty OrgNameProperty = CreateProperty<string>("OrgName");
-        public static readonly DependencyProperty OrgCodeProperty = CreateProperty<string>("OrgCode");
-        public static readonly DependencyProperty GradeNameProperty = CreateProperty<string>("GradeName");
-
         // 위치 정보
         public static readonly DependencyProperty LocationIDProperty = CreateProperty<int>("LocationID");
         public static readonly DependencyProperty LocationNameProperty = CreateProperty<string>("LocationName");
 
-        // 알람 정보
-        public static readonly DependencyProperty IsAlarmProperty = CreateProperty<int>("IsAlarm");
+        // 이미지 프로퍼티
+        public static readonly DependencyProperty PhotoProperty = CreateProperty<string>("Photo");
+        public static readonly DependencyProperty PhotoPathProperty = CreateProperty<string>("PhotoPath");
+        public static readonly DependencyProperty PhotoImgProperty = CreateProperty<BitmapImage>("PhotoImg");
 
         // 컴포넌트 설정
         public static readonly DependencyProperty AutoClearSecondsProperty = CreateProperty<double>("AutoClearSeconds", 2.5);
@@ -185,28 +356,29 @@ namespace TagPass.Views.Components
 
         #region Properties
 
+        public int IsAlarm { get => GetValue<int>(IsAlarmProperty); set => SetValue(IsAlarmProperty, value); }
         public int AlarmID { get => GetValue<int>(AlarmIDProperty); set => SetValue(AlarmIDProperty, value); }
         public string FormattedDate { get => GetValue<string>(FormattedDateProperty); set => SetValue(FormattedDateProperty, value); }
         public int EqMasterID { get => GetValue<int>(EqMasterIDProperty); set => SetValue(EqMasterIDProperty, value); }
         public string EqName { get => GetValue<string>(EqNameProperty); set => SetValue(EqNameProperty, value); }
         public string State { get => GetValue<string>(StateProperty); set => SetValue(StateProperty, value); }
         public string StateName { get => GetValue<string>(StateNameProperty); set => SetValue(StateNameProperty, value); }
-        public string CardNo { get => GetValue<string>(CardNoProperty); set => SetValue(CardNoProperty, value); }
-        public string Name { get => GetValue<string>(NameProperty); set => SetValue(NameProperty, value); }
+        public string PersonName { get => GetValue<string>(PersonNameProperty); set => SetValue(PersonNameProperty, value); }
         public string Sabun { get => GetValue<string>(SabunProperty); set => SetValue(SabunProperty, value); }
-        public string Photo { get => GetValue<string>(PhotoProperty); set => SetValue(PhotoProperty, value); }
-        public string PhotoPath { get => GetValue<string>(PhotoPathProperty); set => SetValue(PhotoPathProperty, value); }
+        public string CardNo { get => GetValue<string>(CardNoProperty); set => SetValue(CardNoProperty, value); }
+        public string OrgCode { get => GetValue<string>(OrgCodeProperty); set => SetValue(OrgCodeProperty, value); }
+        public string OrgName { get => GetValue<string>(OrgNameProperty); set => SetValue(OrgNameProperty, value); }
+        public string GradeName { get => GetValue<string>(GradeNameProperty); set => SetValue(GradeNameProperty, value); }
         public string PersonUser1 { get => GetValue<string>(PersonUser1Property); set => SetValue(PersonUser1Property, value); }
         public string PersonUser2 { get => GetValue<string>(PersonUser2Property); set => SetValue(PersonUser2Property, value); }
         public string PersonUser3 { get => GetValue<string>(PersonUser3Property); set => SetValue(PersonUser3Property, value); }
         public string PersonUser4 { get => GetValue<string>(PersonUser4Property); set => SetValue(PersonUser4Property, value); }
         public string PersonUser5 { get => GetValue<string>(PersonUser5Property); set => SetValue(PersonUser5Property, value); }
-        public string OrgName { get => GetValue<string>(OrgNameProperty); set => SetValue(OrgNameProperty, value); }
-        public string OrgCode { get => GetValue<string>(OrgCodeProperty); set => SetValue(OrgCodeProperty, value); }
-        public string GradeName { get => GetValue<string>(GradeNameProperty); set => SetValue(GradeNameProperty, value); }
         public int LocationID { get => GetValue<int>(LocationIDProperty); set => SetValue(LocationIDProperty, value); }
         public string LocationName { get => GetValue<string>(LocationNameProperty); set => SetValue(LocationNameProperty, value); }
-        public int IsAlarm { get => GetValue<int>(IsAlarmProperty); set => SetValue(IsAlarmProperty, value); }
+        public string Photo { get => GetValue<string>(PhotoProperty); set => SetValue(PhotoProperty, value); }
+        public string PhotoPath { get => GetValue<string>(PhotoPathProperty); set => SetValue(PhotoPathProperty, value); }
+        public BitmapImage PhotoImg { get => GetValue<BitmapImage>(PhotoImgProperty); set => SetValue(PhotoImgProperty, value); }
         public double AutoClearSeconds { get => GetValue<double>(AutoClearSecondsProperty); set => SetValue(AutoClearSecondsProperty, value); }
 
         #endregion
@@ -233,6 +405,8 @@ namespace TagPass.Views.Components
         public void Dispose()
         {
             ClearTimer();
+            CleanupCurrentImage();
+            _imageCache.Clear();
         }
     }
 }
