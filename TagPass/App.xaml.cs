@@ -17,6 +17,7 @@ namespace TagPass
             // 서비스 초기화
             if (RegistIniSettingsFile() && RegistSettingsService())
             {
+                RegistTimeManager();
                 RegistMqttService();
                 InitializeMqttConnection();
             }
@@ -24,6 +25,20 @@ namespace TagPass
 
         protected override void OnExit(ExitEventArgs e)
         {
+            #region TimeManager 해제
+            try
+            {
+                if (Singletons.Instance.TryGetKeyedSingleton<ITimeManager>(Keys.TimeManager, out var timeManager))
+                {
+                    timeManager.Stop();
+                    timeManager.Dispose();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"TimeManager 서비스 정리 중 오류: {ex.Message}");
+            }
+            #endregion
 
             #region MQTT 해제
             try
@@ -97,6 +112,26 @@ namespace TagPass
             catch (Exception ex)
             {
                 MessageBox.Show($"SettingsService 초기화 실패: {ex.Message}", "오류", MessageBoxButton.OK, MessageBoxImage.Error);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Time Manager 인스턴스 생성 및 등록
+        /// </summary>
+        private bool RegistTimeManager()
+        {
+            try
+            {
+                var timeManager = new TimeManager();
+                timeManager.Start(); // 시간 업데이트 시작
+
+                Singletons.Instance.AddKeyedSingleton<ITimeManager>(Keys.TimeManager, timeManager);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"TimeManager 초기화 실패: {ex.Message}", "오류", MessageBoxButton.OK, MessageBoxImage.Error);
                 return false;
             }
         }

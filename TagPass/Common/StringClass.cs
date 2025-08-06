@@ -32,6 +32,7 @@
         public const string IniSettings = "IniSettings";
         public const string SettingsService = "SettingsService";
         public const string MqttService = "MqttService";
+        public const string TimeManager = "TimeManager";
 
         // Animation 관련
         public const string SlideShowAnimation = "SlideShowAnimation";

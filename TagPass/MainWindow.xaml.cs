@@ -1,44 +1,59 @@
-﻿using SingletonManager;
+﻿using S1SocketDataDTO.Models;
+using SingletonManager;
+using System.ComponentModel;
+using System.IO;
+using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Media;
+using System.Xml.Serialization;
 using TagPass.Common;
 using TagPass.Services;
 using TagPass.Views;
-using TagPass.Models;
-using S1SocketDataDTO.Models;
-using System;
-using System.Windows.Media;
-using System.Windows.Controls;
-using System.Xml.Serialization;
-using System.IO;
 
 namespace TagPass
 {
-    public partial class MainWindow : Window
+    public partial class MainWindow : Window, INotifyPropertyChanged
     {
-        private AccessMonitorViewModel _viewModel;
+        private AlarmEventDto _selectedEmployee;    // 현재 선택된 직원 정보
+
         private IMqttService _mqttService;
+        private ITimeManager _timeManager;
 
-        // BasicCard 참조
+        #region 컴포넌트
+
         private Views.Components.BasicCard _basicCard;
+        private Views.Components.AlarmEventList _alarmEventList;
 
+        #endregion
+        
         public MainWindow()
         {
             InitializeComponent();
-
-            _viewModel = new AccessMonitorViewModel();
-            DataContext = _viewModel;
+            this.DataContext = this;
 
             WindowState = WindowState.Maximized;    // 전체화면
             WindowStyle = WindowStyle.None;         // 타이틀바 제거
 
-            // 키보드 이벤트 핸들러 등록
             KeyDown += MainWindow_KeyDown;
             Focusable = true;
 
-            _basicCard = FindName("BasicCard") as Views.Components.BasicCard;   // BasicCard 참조 가져오기
+            #region 서비스 및 컴포넌트
+
+            _timeManager = Singletons.Instance.GetKeyedSingleton<ITimeManager>(Keys.TimeManager);
+            _timeManager.PropertyChanged += TimeManager_PropertyChanged;
+
+            _basicCard = FindName("BasicCard") as Views.Components.BasicCard;
+
+            _alarmEventList = FindName("AlarmEventListComponent") as Views.Components.AlarmEventList;
+            if (_alarmEventList != null)
+            {
+                _alarmEventList.SelectedEmployeeChanged += OnSelectedEmployeeChanged;
+            }
 
             InitializeMqttMessageHandling();    // MQTT 서비스 구독 및 메시지 처리 설정
+
+            #endregion
         }
 
         public ConsoleView GetConsoleView()
@@ -68,6 +83,25 @@ namespace TagPass
                     HideConsoleView();
                     e.Handled = true;
                     break;
+            }
+        }
+
+        /// <summary>
+        /// 풀스크린 토글
+        /// </summary>
+        private void ToggleFullscreen()
+        {
+            if (WindowState == WindowState.Maximized && WindowStyle == WindowStyle.None)
+            {
+                WindowState = WindowState.Normal;
+                WindowStyle = WindowStyle.SingleBorderWindow;
+                GetConsoleView().LogInfo("창 모드로 전환되었습니다.");
+            }
+            else
+            {
+                WindowState = WindowState.Maximized;
+                WindowStyle = WindowStyle.None;
+                GetConsoleView().LogInfo("전체화면 모드로 전환되었습니다.");
             }
         }
 
@@ -204,7 +238,7 @@ namespace TagPass
             try
             {
                 _basicCard?.UpdateCard(eventData);
-                _viewModel.AddAccessLog(eventData);
+                _alarmEventList?.AddAccessLog(eventData);
 
                 GetConsoleView().LogInfo($"새로운 출입 이벤트: {eventData.Name} ({eventData.StateName})");
             }
@@ -215,25 +249,6 @@ namespace TagPass
         }
 
         #endregion
-
-        /// <summary>
-        /// 풀스크린 토글
-        /// </summary>
-        private void ToggleFullscreen()
-        {
-            if (WindowState == WindowState.Maximized && WindowStyle == WindowStyle.None)
-            {
-                WindowState = WindowState.Normal;
-                WindowStyle = WindowStyle.SingleBorderWindow;
-                GetConsoleView().LogInfo("창 모드로 전환되었습니다.");
-            }
-            else
-            {
-                WindowState = WindowState.Maximized;
-                WindowStyle = WindowStyle.None;
-                GetConsoleView().LogInfo("전체화면 모드로 전환되었습니다.");
-            }
-        }
 
         /// <summary>
         /// 자식 요소를 재귀적으로 찾는 헬퍼 메서드
@@ -255,20 +270,86 @@ namespace TagPass
             return null;
         }
 
+        #region Properties
+
+        /// <summary>
+        /// 현재 시간 (TimeManager에서 가져옴)
+        /// </summary>
+        public DateTime CurrentTime => _timeManager?.CurrentTime ?? DateTime.Now;
+
+        /// <summary>
+        /// TimeManager의 PropertyChanged 이벤트 처리
+        /// </summary>
+        private void TimeManager_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(ITimeManager.CurrentTime))
+            {
+                OnPropertyChanged(nameof(CurrentTime));
+            }
+        }
+
+        /// <summary>
+        /// 선택된 직원 정보
+        /// </summary>
+        public AlarmEventDto SelectedEmployee
+        {
+            get => _selectedEmployee;
+            set
+            {
+                _selectedEmployee = value;
+                OnPropertyChanged();
+            }
+        }
+
+        /// <summary>
+        /// 선택된 직원이 변경되었을 때 처리
+        /// </summary>
+        private void OnSelectedEmployeeChanged(AlarmEventDto selectedEmployee)
+        {
+            SelectedEmployee = selectedEmployee;
+            // BasicCard 업데이트
+            _basicCard?.UpdateCard(selectedEmployee);
+        }
+
+        #endregion
+
+        #region IDispose
+
         /// <summary>
         /// 리소스 정리
         /// </summary>
         protected override void OnClosed(EventArgs e)
         {
-            // MQTT 이벤트 구독 해제
             if (_mqttService != null)
             {
                 _mqttService.MessageReceived -= OnMqttMessageReceived;
             }
 
-            _viewModel?.Dispose();      // ViewModel 리소스 정리
-            _basicCard?.Dispose();      // BasicCard 리소스 정리
+            if (_alarmEventList != null)
+            {
+                _alarmEventList.SelectedEmployeeChanged -= OnSelectedEmployeeChanged;
+            }
+
+            if (_timeManager != null)
+            {
+                _timeManager.PropertyChanged -= TimeManager_PropertyChanged;
+            }
+
+            _basicCard?.Dispose();
             base.OnClosed(e);
         }
+
+        #endregion
+
+        #region INotifyPropertyChanged
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        #endregion
     }
 }
