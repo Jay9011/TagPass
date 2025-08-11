@@ -1,12 +1,8 @@
 ﻿using S1SocketDataDTO.Models;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Threading;
 using System.Windows.Media.Imaging;
-using System.Windows.Media;
 using System;
-using System.Net.Http;
-using System.IO;
 using System.ComponentModel;
 
 namespace TagPass.Views.Components
@@ -14,11 +10,9 @@ namespace TagPass.Views.Components
     /// <summary>
     /// 사원 정보 카드 컴포넌트
     /// </summary>
-    public partial class BasicCard : UserControl
+    public partial class BasicCard : UserControl, IDisposable
     {
-        private DispatcherTimer _clearTimer;
         private BitmapImage _currentBitmapImage;
-        private readonly Dictionary<string, WeakReference> _imageCache = new Dictionary<string, WeakReference>();
 
         public BasicCard()
         {
@@ -39,7 +33,6 @@ namespace TagPass.Views.Components
                 return;
             }
 
-            ClearTimer();
             CleanupCurrentImage();
 
             AlarmID = eventData.AlarmID;
@@ -67,8 +60,6 @@ namespace TagPass.Views.Components
 
             // 이미지 처리
             LoadImage(eventData.PhotoPath, eventData.Photo);
-
-            StartClearTimer(); // 자동 클리어 타이머 시작
         }
 
         /// <summary>
@@ -76,7 +67,6 @@ namespace TagPass.Views.Components
         /// </summary>
         public void ClearCard()
         {
-            ClearTimer();
             CleanupCurrentImage();
 
             AlarmID = 0;
@@ -104,34 +94,6 @@ namespace TagPass.Views.Components
             PhotoImg = null; // PhotoImg 프로퍼티 초기화
         }
 
-        /// <summary>
-        /// 자동 클리어 타이머 시작
-        /// </summary>
-        private void StartClearTimer()
-        {
-            if (AutoClearSeconds <= 0) return;
-
-            _clearTimer = new DispatcherTimer
-            {
-                Interval = TimeSpan.FromSeconds(AutoClearSeconds)
-            };
-
-            _clearTimer.Tick += (s, e) => ClearCard();
-            _clearTimer.Start();
-        }
-
-        /// <summary>
-        /// 타이머 정리
-        /// </summary>
-        private void ClearTimer()
-        {
-            if (_clearTimer != null)
-            {
-                _clearTimer.Stop();
-                _clearTimer = null;
-            }
-        }
-
         private void BasicCard_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             // 높이가 넓이보다 크거나 넓이가 500보다 작으면 세로형 레이아웃
@@ -156,140 +118,33 @@ namespace TagPass.Views.Components
         }
 
         /// <summary>
-        /// 이미지 로드 및 메모리 관리
+        /// 이미지 로드
         /// </summary>
-        /// <param name="imageUrl">이미지 URL</param>
         private void LoadImage(string photoPath, string photo)
         {
+            CleanupCurrentImage();
+
+            if (string.IsNullOrWhiteSpace(photoPath) || string.IsNullOrWhiteSpace(photo))
+            {
+                return;
+            }
+
             try
             {
-                CleanupCurrentImage();
-
-                if (string.IsNullOrWhiteSpace(photoPath) || string.IsNullOrWhiteSpace(photo))
-                {
-                    return;
-                }
-
                 var imageUrl = $"{photoPath.TrimEnd('/')}/{photo}";
-
-                if (_imageCache.TryGetValue(imageUrl, out var cachedRef) &&
-                    cachedRef.Target is BitmapImage cachedImage && cachedImage.CanFreeze)
-                {
-                    PhotoImg = cachedImage;
-                    return;
-                }
-
                 var bitmapImage = new BitmapImage();
-                _currentBitmapImage = bitmapImage;
-
-                EventHandler<DownloadProgressEventArgs> progressHandler = null;
-                EventHandler downloadCompletedHandler = null;
-                EventHandler<ExceptionEventArgs> downloadFailedHandler = null;
-
-                progressHandler = (s, e) =>
-                {
-                    System.Diagnostics.Debug.WriteLine($"다운로드 진행률: {e.Progress}%");
-                };
-
-                downloadCompletedHandler = (s, e) =>
-                {
-                    try
-                    {
-                        var img = s as BitmapImage;
-                        if (img != null && _currentBitmapImage == img)
-                        {
-                            if (img.PixelWidth * img.PixelHeight * 4 > 2 * 1024 * 1024) // 2MB
-                            {
-                                img = ResizeImage(img, 800, 600);
-                            }
-
-                            PhotoImg = img;
-
-                            _imageCache[imageUrl] = new WeakReference(img); // 캐시 사용
-                        }
-                    }
-                    finally
-                    {
-                        if (s is BitmapImage bitmap)
-                        {
-                            bitmap.DownloadProgress -= progressHandler;
-                            bitmap.DownloadCompleted -= downloadCompletedHandler;
-                            bitmap.DownloadFailed -= downloadFailedHandler;
-                        }
-                    }
-                };
-
-                downloadFailedHandler = (s, e) =>
-                {
-                    try
-                    {
-                        System.Diagnostics.Debug.WriteLine($"이미지 다운로드 실패: {e.ErrorException}");
-                        PhotoImg = null;
-                    }
-                    finally
-                    {
-                        if (s is BitmapImage bitmap)
-                        {
-                            bitmap.DownloadProgress -= progressHandler;
-                            bitmap.DownloadCompleted -= downloadCompletedHandler;
-                            bitmap.DownloadFailed -= downloadFailedHandler;
-                        }
-                    }
-                };
-
                 bitmapImage.BeginInit();
                 bitmapImage.UriSource = new Uri(imageUrl, UriKind.Absolute);
                 bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-                //bitmapImage.DecodePixelWidth = 800;
-                //bitmapImage.DecodePixelHeight = 600;
-
-                bitmapImage.DownloadProgress += progressHandler;
-                bitmapImage.DownloadCompleted += downloadCompletedHandler;
-                bitmapImage.DownloadFailed += downloadFailedHandler;
-
                 bitmapImage.EndInit();
+
+                PhotoImg = bitmapImage;
+                _currentBitmapImage = bitmapImage;
             }
             catch (Exception e)
             {
-                CleanupCurrentImage();
-                // TODO: 추후 오류 처리 필요
-            }
-        }
-
-        /// <summary>
-        /// 이미지 리사이즈
-        /// </summary>
-        /// <param name="img"></param>
-        /// <param name="maxWidth"></param>
-        /// <param name="maxHeight"></param>
-        /// <returns></returns>
-        /// <exception cref="NotImplementedException"></exception>
-        private BitmapImage ResizeImage(BitmapImage img, int maxWidth, int maxHeight)
-        {
-            try
-            {
-                var scaleX = (double)maxWidth / img.PixelWidth;
-                var scaleY = (double)maxHeight / img.PixelHeight;
-                var scale = Math.Min(scaleX, scaleY);
-
-                if (scale >= 1.0) return img;
-
-                var newWidth = (int)(img.PixelWidth * scale);
-                var newHeight = (int)(img.PixelHeight * scale);
-
-                var resized = new BitmapImage();
-                resized.BeginInit();
-                resized.UriSource = img.UriSource;
-                resized.DecodePixelWidth = newWidth;
-                resized.DecodePixelHeight = newHeight;
-                resized.CacheOption = BitmapCacheOption.OnLoad;
-                resized.EndInit();
-
-                return resized;
-            }
-            catch (Exception)
-            {
-                return img;
+                System.Diagnostics.Debug.WriteLine($"Image loading failed: {e.Message}");
+                PhotoImg = null;
             }
         }
 
@@ -306,7 +161,9 @@ namespace TagPass.Views.Components
                 }
                 catch (Exception)
                 {
+                    // 무시
                 }
+                _currentBitmapImage = null;
             }
 
             PhotoImg = null;
@@ -349,9 +206,6 @@ namespace TagPass.Views.Components
         public static readonly DependencyProperty PhotoPathProperty = CreateProperty<string>("PhotoPath");
         public static readonly DependencyProperty PhotoImgProperty = CreateProperty<BitmapImage>("PhotoImg");
 
-        // 컴포넌트 설정
-        public static readonly DependencyProperty AutoClearSecondsProperty = CreateProperty<double>("AutoClearSeconds", 2.5);
-
         #endregion
 
         #region Properties
@@ -379,7 +233,6 @@ namespace TagPass.Views.Components
         public string Photo { get => GetValue<string>(PhotoProperty); set => SetValue(PhotoProperty, value); }
         public string PhotoPath { get => GetValue<string>(PhotoPathProperty); set => SetValue(PhotoPathProperty, value); }
         public BitmapImage PhotoImg { get => GetValue<BitmapImage>(PhotoImgProperty); set => SetValue(PhotoImgProperty, value); }
-        public double AutoClearSeconds { get => GetValue<double>(AutoClearSecondsProperty); set => SetValue(AutoClearSecondsProperty, value); }
 
         #endregion
 
@@ -404,9 +257,7 @@ namespace TagPass.Views.Components
         /// </summary>
         public void Dispose()
         {
-            ClearTimer();
             CleanupCurrentImage();
-            _imageCache.Clear();
         }
     }
 }

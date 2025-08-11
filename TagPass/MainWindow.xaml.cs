@@ -1,15 +1,20 @@
 ﻿using S1SocketDataDTO.Models;
 using SingletonManager;
+using System;
 using System.ComponentModel;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Xml.Serialization;
+using System.Threading.Tasks;
 using TagPass.Common;
+using TagPass.Common.Animation;
 using TagPass.Services;
 using TagPass.Views;
+using TagPass.Views.Components;
 
 namespace TagPass
 {
@@ -20,13 +25,15 @@ namespace TagPass
         private IMqttService _mqttService;
         private ITimeManager _timeManager;
 
+        private FrameworkElement? _currentCard; // 현재 표시되는 카드
+        private readonly IAnimation _cardAnimation; // 카드 애니메이션
+
         #region 컴포넌트
 
-        private Views.Components.BasicCard _basicCard;
         private Views.Components.AlarmEventList _alarmEventList;
 
         #endregion
-        
+
         public MainWindow()
         {
             InitializeComponent();
@@ -43,8 +50,6 @@ namespace TagPass
             _timeManager = Singletons.Instance.GetKeyedSingleton<ITimeManager>(Keys.TimeManager);
             _timeManager.PropertyChanged += TimeManager_PropertyChanged;
 
-            _basicCard = FindName("BasicCard") as Views.Components.BasicCard;
-
             _alarmEventList = FindName("AlarmEventListComponent") as Views.Components.AlarmEventList;
             if (_alarmEventList != null)
             {
@@ -52,6 +57,8 @@ namespace TagPass
             }
 
             InitializeMqttMessageHandling();    // MQTT 서비스 구독 및 메시지 처리 설정
+
+            _cardAnimation = AnimationFactory.SlideShow;
 
             #endregion
         }
@@ -237,7 +244,7 @@ namespace TagPass
 
             try
             {
-                _basicCard?.UpdateCard(eventData);
+                CreateCardAndAnimate(eventData);
                 _alarmEventList?.AddAccessLog(eventData);
 
                 GetConsoleView().LogInfo($"새로운 출입 이벤트: {eventData.Name} ({eventData.StateName})");
@@ -307,8 +314,56 @@ namespace TagPass
         private void OnSelectedEmployeeChanged(AlarmEventDto selectedEmployee)
         {
             SelectedEmployee = selectedEmployee;
-            // BasicCard 업데이트
-            _basicCard?.UpdateCard(selectedEmployee);
+            // TODO: 추후 팝업이나 다른 방법으로 직원 이력 확인 등... 처리
+        }
+
+        /// <summary>
+        /// 카드를 생성하고 애니메이션을 적용합니다.
+        /// </summary>
+        private async void CreateCardAndAnimate(AlarmEventDto eventData)
+        {
+            // 이전 카드가 있다면 즉시 제거하는 대신, 숨김 애니메이션을 실행
+            if (_currentCard != null)
+            {
+                var cardToHide = _currentCard;
+                _currentCard = null;
+
+                _cardAnimation.HideElement(cardToHide, TimeSpan.FromMilliseconds(400), () =>
+                {
+                    CardCanvas.Children.Remove(cardToHide);
+                    (cardToHide as IDisposable)?.Dispose();
+                });
+            }
+
+            if (eventData == null) return;
+
+            var newCard = new BasicCard();
+            newCard.UpdateCard(eventData);
+            newCard.Width = 1024;
+            newCard.Height = 720;
+
+            // 캔버스에 추가하고 현재 카드로 설정
+            CardCanvas.Children.Add(newCard);
+            _currentCard = newCard;
+
+            Canvas.SetTop(newCard, (CardCanvas.ActualHeight - newCard.Height) / 2);
+
+            _cardAnimation.ShowElement(newCard);
+
+            await Task.Delay(2500);
+
+            if (newCard == _currentCard)
+            {
+                _cardAnimation.HideElement(newCard, null, () =>
+                {
+                    if (newCard == _currentCard)
+                    {
+                        CardCanvas.Children.Remove(newCard);
+                        (newCard as IDisposable)?.Dispose();
+                        _currentCard = null;
+                    }
+                });
+            }
         }
 
         #endregion
@@ -335,7 +390,8 @@ namespace TagPass
                 _timeManager.PropertyChanged -= TimeManager_PropertyChanged;
             }
 
-            _basicCard?.Dispose();
+            (_currentCard as IDisposable)?.Dispose();
+            AnimationFactory.ClearCache(); // 애니메이션 팩토리 캐시 정리
             base.OnClosed(e);
         }
 

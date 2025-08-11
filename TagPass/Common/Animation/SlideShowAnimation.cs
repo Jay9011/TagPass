@@ -34,17 +34,23 @@ namespace TagPass.Common.Animation
         }
 
         /// <summary>
-        /// 등장 애니메이션 생성
+        /// 등장 애니메이션 생성 (중앙으로)
         /// </summary>
         private Storyboard CreateShowAnimation(FrameworkElement target, TimeSpan duration)
         {
             var storyboard = CreateStoryboard();
-            EnsureScaleTransform(target);   // ScaleTransform 확인
+            EnsureScaleTransform(target);
 
-            // 왼쪽에서 중앙으로
+            double finalLeft = 0;
+            if (target.Parent is Canvas canvas)
+            {
+                finalLeft = (canvas.ActualWidth - target.Width) / 2;
+            }
+
+            // 왼쪽 화면 밖에서 중앙으로
             var leftAnimation = CreateDoubleAnimation(
-                from: -400,
-                to: 0,
+                from: -target.Width,
+                to: finalLeft,
                 duration: duration,
                 easingFunction: EasingFunctions.QuadraticEaseOut
             );
@@ -65,17 +71,25 @@ namespace TagPass.Common.Animation
         }
 
         /// <summary>
-        /// 사라짐 애니메이션 생성
+        /// 사라짐 애니메이션 생성 (중앙에서)
         /// </summary>
         private Storyboard CreateHideAnimation(FrameworkElement target, TimeSpan duration)
         {
             var storyboard = CreateStoryboard();
-            EnsureScaleTransform(target);   // ScaleTransform 확인
+            EnsureScaleTransform(target);
 
-            // 중앙에서 오른쪽으로
+            double startLeft = 0;
+            double finalRight = 0;
+            if (target.Parent is Canvas canvas)
+            {
+                startLeft = (canvas.ActualWidth - target.Width) / 2;
+                finalRight = canvas.ActualWidth;
+            }
+
+            // 중앙에서 오른쪽 밖으로
             var leftAnimation = CreateDoubleAnimation(
-                from: 0,
-                to: 400,
+                from: startLeft,
+                to: finalRight,
                 duration: duration,
                 easingFunction: EasingFunctions.QuadraticEaseIn
             );

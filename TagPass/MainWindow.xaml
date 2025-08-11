@@ -71,18 +71,12 @@
                         </Border>
 
                         <!-- 사원 카드 영역 -->
-                        <Canvas Grid.Row="1" ClipToBounds="True">
+                        <Canvas x:Name="CardCanvas" Grid.Row="1" ClipToBounds="True">
                             <Canvas.Background>
                                 <ImageBrush ImageSource="/Resources/Image/holographic_background.jpg" 
                                             Stretch="UniformToFill" 
                                             Opacity="0.4"/>
                             </Canvas.Background>
-
-                            <components:BasicCard x:Name="BasicCard"
-                                                  Width="{Binding RelativeSource={RelativeSource AncestorType=Canvas}, Path=ActualWidth}"
-                                                  Height="{Binding RelativeSource={RelativeSource AncestorType=Canvas}, Path=ActualHeight}"
-                                                  HorizontalAlignment="Stretch" 
-                                                  VerticalAlignment="Stretch"/>
                         </Canvas>
 
                         <!-- 추가 정보 -->
